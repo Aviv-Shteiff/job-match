@@ -66,4 +66,52 @@ body {
   background: #fef2f2;
   padding: 0.75rem 1rem;
   border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.failure-detail {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
+textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.results {
+  margin-top: 1.5rem;
+  border-top: 1px solid #ccc;
+  padding-top: 1rem;
+}
+
+.requirement-list {
+  list-style: none;
+  padding: 0;
+}
+
+.requirement-list li {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid #333;
+  background: #f7f7f7;
+}
+
+.requirement-text {
+  font-weight: 600;
+}
+
+.requirement-quote {
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+  margin-top: 0.2rem;
+}
+
+.rejected-note {
+  color: #7a5c00;
+  font-size: 0.9rem;
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ProfileScreen from './ProfileScreen.jsx';
+import AdScreen from './AdScreen.jsx';
 
 export default function App() {
   const [tab, setTab] = useState('profile');
@@ -24,7 +25,7 @@ export default function App() {
         </button>
       </nav>
       {tab === 'profile' && <ProfileScreen />}
-      {tab === 'analyse' && <p>Ad screen lands in the next step of this turn.</p>}
+      {tab === 'analyse' && <AdScreen />}
     </div>
   );
 }
