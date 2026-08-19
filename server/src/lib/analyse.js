@@ -4,6 +4,7 @@ import { buildExtractionPrompt } from './extractionPrompt.js';
 import { callOpenRouter } from './openrouter.js';
 import { validateExtractionResponse } from './validateResponse.js';
 import { groundRequirements } from './grounding.js';
+import { buildMatchSnapshot } from './matching.js';
 import { FAILURE_REASONS, failure } from './failures.js';
 
 // The only place the model is called (SPEC.md §3): guard the input, extract, ground
@@ -40,6 +41,10 @@ export async function analyseAd(rawAdText) {
     return failure(FAILURE_REASONS.NO_GROUNDED_REQUIREMENTS, message);
   }
 
+  const db = getDb();
+  const profile = await db.collection('profiles').findOne({ _id: 'profile' });
+  const match = buildMatchSnapshot(accepted, profile?.skills ?? []);
+
   const analysis = {
     adText,
     requirements: accepted,
@@ -47,8 +52,12 @@ export async function analyseAd(rawAdText) {
       ...requirement,
       reason,
     })),
-    mustHavePercent: null,
-    niceToHavePercent: null,
+    // Top-level fields mirror match.mustHavePercent/niceToHavePercent for cheap
+    // sorting (C7) without reaching into the nested snapshot. They're written
+    // together in one insert, so the two can't drift apart.
+    mustHavePercent: match.mustHavePercent,
+    niceToHavePercent: match.niceToHavePercent,
+    match,
     analyzedAt: new Date(),
     model: modelResult.model,
     inputTokens: modelResult.inputTokens,
@@ -57,7 +66,6 @@ export async function analyseAd(rawAdText) {
     latencyMs: modelResult.latencyMs,
   };
 
-  const db = getDb();
   const { insertedId } = await db.collection('analyses').insertOne(analysis);
 
   return { ok: true, analysis: { ...analysis, _id: insertedId } };

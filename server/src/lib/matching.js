@@ -49,3 +49,16 @@ export function computeMatch(requirements, profileSkills) {
     niceToHavePercent: percent(niceToHaveMatched, niceToHaveMatchable),
   };
 }
+
+// Wraps computeMatch() with the provenance a stored snapshot needs: which profile
+// skills produced this result and when. Kept separate from computeMatch so that
+// function stays pure and trivially testable (no Date.now() inside it). Shared by
+// analyse.js (computed at analysis time) and the backfill script (computed once,
+// after the fact, for analyses stored before matching existed).
+export function buildMatchSnapshot(requirements, profileSkills) {
+  return {
+    ...computeMatch(requirements, profileSkills),
+    profileSkillsUsed: profileSkills,
+    matchedAt: new Date(),
+  };
+}
