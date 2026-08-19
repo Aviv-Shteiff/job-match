@@ -50,6 +50,7 @@ export default function AdScreen() {
           value={adText}
           onChange={(e) => setAdText(e.target.value)}
           placeholder="Paste the full job ad text here…"
+          dir="auto"
         />
         <div>
           <button type="submit" disabled={status === 'submitting' || adText.trim() === ''}>
@@ -103,8 +104,12 @@ export default function AdScreen() {
 function RequirementItem({ requirement }) {
   return (
     <li>
-      <div className="requirement-text">{requirement.text}</div>
-      <div className="requirement-quote">&ldquo;{requirement.source_quote}&rdquo;</div>
+      <div className="requirement-text" dir="auto">
+        {requirement.text}
+      </div>
+      <div className="requirement-quote" dir="auto">
+        &ldquo;{requirement.source_quote}&rdquo;
+      </div>
     </li>
   );
 }
