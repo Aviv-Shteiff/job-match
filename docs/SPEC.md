@@ -15,7 +15,11 @@ Where this document is silent, decide in favour of making a real gap more visibl
 
 ## 2. Testable success criteria
 
-1. A skills profile can be created, edited, and persists between sessions.
+1. A skills profile can be created, edited, and persists between sessions. A skill
+   entry is a name plus an optional number of years of experience; the profile also
+   holds one optional free-text education entry. A skill with no years recorded is
+   not the same as a skill recorded as zero years — the first says nothing about
+   duration, the second says there is none — and the two are stored distinctly.
 2. Submitting ad text returns a requirement list or a visible error within 30 seconds.
    Text shorter than 200 characters is rejected before any model call, with a message
    asking for the full ad — this is a minimum length guard against empty or accidental
@@ -38,7 +42,10 @@ Where this document is silent, decide in favour of making a real gap more visibl
    identifier, input and output tokens, cost, and latency in milliseconds. The two
    percentages are absent or `null` until a skills profile has been matched against
    the analysis — an analysis produced before matching exists is not incomplete, it
-   has simply not reached that stage yet.
+   has simply not reached that stage yet. An analysis also stores the profile
+   snapshot it was matched against — skill names, their years, and the education
+   entry — so a stored percentage can be explained by the profile that produced it
+   rather than by the profile as it now stands.
 7. The ad list is ordered by must-have match percentage, highest first.
 8. The detail view lists met requirements and gaps, with must-have gaps before
    nice-to-have gaps.
@@ -49,15 +56,35 @@ Where this document is silent, decide in favour of making a real gap more visibl
     a visible failure state, never an empty list rendered as success.
 12. Matching, percentage calculation, and gap ordering are performed in ordinary code
     with no model call.
+13. A requirement stating a minimum number of years is met only when the matching
+    profile skill records at least that many. A skill with no years recorded does
+    not satisfy a stated threshold, and the shortfall is shown as the reason for the
+    gap rather than left to be inferred.
+14. A requirement stating no number of years is met by the presence of the matching
+    skill, whatever years are or are not recorded against it.
+15. A requirement for a degree or formal education is met only when the profile's
+    education entry names the same field of study, compared after degree-type words
+    ("BSc", "bachelor", "degree", "תואר") are set aside on both sides. An empty
+    education entry makes such a requirement a gap; it is never dropped from the
+    calculation the way a soft-skill requirement is. A requirement naming no field
+    at all — "an equivalent technical degree" — is met by any non-empty education
+    entry.
+16. Roles and seniority levels are matched by the same mechanism as any other skill
+    entry. No criterion, stored field, or code path treats them as a distinct kind.
 
 ## 3. Architectural boundaries
 
 - The Express backend holds the OpenRouter API key. It never reaches the browser.
 - All persistence is MongoDB.
+- The profile is one document: skill entries, each a name with optional years, and
+  one optional education string. Roles and seniority are skill entries, not a second
+  schema.
 - The frontend is React with Vite, in plain JavaScript. No TypeScript anywhere.
 - The model is called only to extract and classify requirements from ad text.
-  Everything else — matching, percentages, ordering, storage, the grounding check —
-  is ordinary code.
+  Classifying includes reading off what the ad states about a requirement: its
+  must-have/nice-to-have label, any minimum number of years, and whether it asks for
+  a degree. Comparing those readings against the profile — and every percentage,
+  ordering, storage, and grounding decision that follows — is ordinary code.
 - Model access goes through OpenRouter so the model can be changed by configuration.
 
 File layout and module boundaries inside `server/` and `client/` are the agent's
@@ -95,3 +122,17 @@ decisions.
   as an empty analysis.
 - Very long ads exceed a sensible token budget. Decide the cap and the behaviour at
   the cap.
+- Ads state experience many ways: "3+ years", "at least 3 years", "3-5 years",
+  "minimum 3 years", "שלוש שנות ניסיון". Decide which of these yield a comparable
+  number, and what happens to a requirement whose phrasing yields none.
+- A number of years in an ad does not always attach to a skill. "4+ years as a
+  full-stack developer" is a threshold on the role; "3+ years with Node.js" is a
+  threshold on one skill. The same number means different things.
+- Education requirements usually carry an escape hatch — "or an equivalent technical
+  degree", "or equivalent experience". Treating the degree as a hard requirement
+  over-reports gaps; ignoring the clause under-reports them.
+- The wording chosen for a profile entry silently decides whether it matches. "Full
+  Stack Developer" matches an English ad's "4+ years of experience as a full-stack
+  developer" but not a Hebrew ad's "5 שנות ניסיון בפיתוח Full Stack", where "Full
+  Stack" alone matches both. Nothing tells the user this.
+- Years recorded in a profile go stale. Nothing updates them as time passes.
