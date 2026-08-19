@@ -22,4 +22,12 @@ Node.js / Express, MongoDB, React (Vite, plain JavaScript), OpenRouter. No TypeS
 
 ## Running it
 
-Filled in once it runs.
+Copy `.env.example` to `.env` and fill in `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`,
+and `MONGODB_URI`.
+
+```
+cd server && npm install && npm run dev   # http://localhost:3000
+cd client && npm install && npm run dev   # http://localhost:5173, proxies /api to the server
+```
+
+Run the server's tests with `cd server && npm test`.

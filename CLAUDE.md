@@ -63,4 +63,9 @@ is only about how work is done in this repository.
 
 ## Commands
 
-Filled in once the project exists. Keep accurate.
+- `cd server && npm run dev` — server with auto-restart, reads `../.env`
+- `cd server && npm test` — server tests (`node --test`)
+- `cd server && npm run lint` — server lint
+- `cd client && npm run dev` — client dev server (Vite, proxies `/api` to the server)
+- `cd client && npm run build` — client production build
+- `cd client && npm run lint` — client lint
