@@ -42,8 +42,9 @@ export async function analyseAd(rawAdText) {
   }
 
   const db = getDb();
-  const profile = await db.collection('profiles').findOne({ _id: 'profile' });
-  const match = buildMatchSnapshot(accepted, profile?.skills ?? []);
+  const storedProfile = await db.collection('profiles').findOne({ _id: 'profile' });
+  const profile = { skills: storedProfile?.skills ?? [], education: storedProfile?.education ?? null };
+  const match = buildMatchSnapshot(accepted, profile);
 
   const analysis = {
     adText,

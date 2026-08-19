@@ -12,14 +12,14 @@ import { buildMatchSnapshot } from '../src/lib/matching.js';
 
 async function main() {
   const db = await connectDb();
-  const profile = await db.collection('profiles').findOne({ _id: 'profile' });
-  const profileSkills = profile?.skills ?? [];
+  const storedProfile = await db.collection('profiles').findOne({ _id: 'profile' });
+  const profile = { skills: storedProfile?.skills ?? [], education: storedProfile?.education ?? null };
 
   const toBackfill = await db.collection('analyses').find({ match: { $exists: false } }).toArray();
-  console.log(`Backfilling ${toBackfill.length} analysis(es) against profile: ${JSON.stringify(profileSkills)}`);
+  console.log(`Backfilling ${toBackfill.length} analysis(es) against profile: ${JSON.stringify(profile)}`);
 
   for (const analysis of toBackfill) {
-    const match = buildMatchSnapshot(analysis.requirements, profileSkills);
+    const match = buildMatchSnapshot(analysis.requirements, profile);
     await db.collection('analyses').updateOne(
       { _id: analysis._id },
       {
