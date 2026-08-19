@@ -35,11 +35,21 @@ export async function callOpenRouter(prompt) {
       signal: controller.signal,
     });
 
+    const rawBody = await response.text();
+    // Measured after the body is fully read, not right after fetch() resolves —
+    // some providers send headers quickly but stream the body slowly (e.g. while
+    // still generating), so time-to-headers understates real latency.
     const latencyMs = Date.now() - startedAt;
-    const body = await response.json().catch(() => null);
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      body = null;
+    }
 
-    if (!response.ok || !body) {
-      const errorMessage = body?.error?.message || `OpenRouter returned HTTP ${response.status}`;
+    if (!response.ok) {
+      const errorMessage =
+        body?.error?.message || `OpenRouter returned HTTP ${response.status}: ${rawBody.slice(0, 300)}`;
       await logModelCall({
         requestedModel,
         model: null,
@@ -49,6 +59,21 @@ export async function callOpenRouter(prompt) {
         latencyMs,
         status: 'error',
         errorMessage,
+      });
+      return failure(FAILURE_REASONS.MODEL_CALL_FAILED, errorMessage);
+    }
+
+    if (!body) {
+      const errorMessage = 'OpenRouter response body was not valid JSON.';
+      await logModelCall({
+        requestedModel,
+        model: null,
+        inputTokens: null,
+        outputTokens: null,
+        cost: null,
+        latencyMs,
+        status: 'error',
+        errorMessage: `${errorMessage} Raw body (truncated): ${rawBody.slice(0, 300)}`,
       });
       return failure(FAILURE_REASONS.MODEL_CALL_FAILED, errorMessage);
     }
