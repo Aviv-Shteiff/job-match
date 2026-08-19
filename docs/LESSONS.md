@@ -94,6 +94,7 @@ afterward (one English full-stack role, one Hebrew role).
   the profile hasn't yet been in the specific shape (partial coverage of an
   AND-requirement) that would expose it. Worth deliberately testing with a
   narrower profile before trusting the percentages on a real multi-skill-heavy ad.
+  **Update:** now confirmed against real data, not just predicted — see below.
 - A requirement that names a role or years-of-experience rather than a specific
   technology — "5 שנות ניסיון בפיתוח Full Stack" (5 years of Full Stack
   development experience) — stays matchable under the approved exclude-list
@@ -117,3 +118,48 @@ afterward (one English full-stack role, one Hebrew role).
   each detail response has the expected shape, with met + gaps + excluded
   summing to that ad's actual requirement count for all 10 analyses. Rendering
   and click behavior in an actual browser are still unconfirmed by me.
+- The Q1 multi-skill overstatement is now confirmed in real data, not just
+  theoretical: "Knowledge of MongoDB and SQL-Based databases" is marked as met
+  against a profile that has "MongoDB" but no "SQL" skill at all. This is the
+  substring-match trade-off from Q1's answer working exactly as expected — not a
+  bug, but now an observed case rather than only a predicted risk.
+- Tested against a longer, denser real ad (Minute Media — a full job description
+  with separate responsibilities, requirements, and advantages sections).
+  Boilerplate exclusion held up correctly at this greater length and density.
+  Grounding also showed real judgment in a subtler way than anything seen in
+  turn 1: the ad's narrative mentions "the backend is written in Go" outside the
+  requirements list, describing the stack — and Go was correctly NOT extracted
+  as a must-have from that sentence. It only appeared as a requirement where the
+  ad names it explicitly, under Advantages. The model did not fill in a
+  plausible-sounding requirement from surrounding context, which is exactly the
+  failure mode §5's grounding-check pitfall exists to catch.
+- Matching only checks whether a skill name appears in the profile — it has no
+  concept of experience level, years, education, or role/seniority. Three
+  concrete gaps observed across real ads, all currently permanent and
+  unresolvable by any profile edit under the current rules:
+  - Years of experience per skill: "3+ years of experience with Node.js" is
+    marked met by a profile that just lists "Node.js", with no way to express
+    how many years.
+  - Degree requirements: "Bachelor's degree in Computer Science (BSC) or an
+    equivalent technical degree" is neither a soft-skill marker nor a named
+    technology, so it stays in the must-have denominator as an unresolvable gap.
+  - Role/seniority-level requirements: "4+ years of experience as a full-stack
+    developer" — the same shape as the "5 years of Full Stack development
+    experience" example already noted above, and equally a permanent gap.
+- There's no way to delete an analysed ad from the list. Not in FRAMING.md's
+  original scope, but worth having eventually — useful for removing test data
+  now and irrelevant ads later.
+- The ranked list currently shows duplicate/re-analysed ads as separate entries
+  with no visual distinction. Expected, per the plan's G9 decision not to
+  de-duplicate (avoids silently discarding stored evidence) — but worth deciding
+  in a future turn whether re-analyses of the same ad should be grouped or
+  marked.
+
+Decided next step (turn 3): the three permanent-gap categories above —
+experience-per-skill, education, and role/seniority — will be addressed in
+turn 3 by extending the profile and matching logic, ahead of the recalculate
+button, which moves to turn 4. This is a deliberate scope extension beyond
+FRAMING.md's current "list of skill names" profile definition, not a spec
+clarification — like turn 1 and turn 2's amendments, it will be proposed as new
+FRAMING.md/SPEC.md criteria for approval before turn 3's build prompt is
+written, not decided silently.
