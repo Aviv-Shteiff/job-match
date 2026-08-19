@@ -14,8 +14,8 @@ export function getProfile() {
   return apiFetch('/api/profile');
 }
 
-export function saveProfile(skills) {
-  return apiFetch('/api/profile', { method: 'PUT', body: JSON.stringify({ skills }) });
+export function saveProfile(payload) {
+  return apiFetch('/api/profile', { method: 'PUT', body: JSON.stringify(payload) });
 }
 
 export function submitAd(adText) {

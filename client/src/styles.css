@@ -40,6 +40,31 @@ body {
 }
 
 .skill-list input {
+  padding: 0.4rem;
+  font-size: 1rem;
+}
+
+.skill-list .skill-name {
+  flex: 1;
+}
+
+.skill-list .skill-years {
+  width: 4.5rem;
+  text-align: right;
+}
+
+.education-row {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.education-row label {
+  font-weight: 600;
+}
+
+.education-row input {
   flex: 1;
   padding: 0.4rem;
   font-size: 1rem;
