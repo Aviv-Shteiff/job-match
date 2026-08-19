@@ -15,29 +15,40 @@ Where this document is silent, decide in favour of making a real gap more visibl
 
 ## 2. Testable success criteria
 
-- A skills profile can be created, edited, and persists between sessions.
-- Submitting ad text returns a requirement list or a visible error within 30 seconds.
-  Text shorter than 200 characters is rejected before any model call, with a message
-  asking for the full ad — this is a minimum length guard against empty or accidental
-  submissions, not a claim about what makes a valid job ad.
-- Every extracted requirement carries a `source_quote` field, and that quote is
-  present in the submitted ad text after whitespace and case normalization.
-- A requirement whose `source_quote` is not found in the source text is not shown as a
-  requirement.
-- Every shown requirement is labelled exactly one of `must_have` or `nice_to_have`.
-- Each analysis stores: the ad text, the requirement list, the must-have match
-  percentage, the nice-to-have match percentage, the analysis timestamp, the model
-  identifier, input and output tokens, cost, and latency in milliseconds.
-- The ad list is ordered by must-have match percentage, highest first.
-- The detail view lists met requirements and gaps, with must-have gaps before
-  nice-to-have gaps.
-- Editing the profile leaves the stored percentages on existing ads unchanged.
-- "Recalculate" on one ad updates that ad's percentages against the current profile
-  and makes no model call.
-- A model response that is not valid JSON, or is missing required fields, produces a
-  visible failure state, never an empty list rendered as success.
-- Matching, percentage calculation, and gap ordering are performed in ordinary code
-  with no model call.
+1. A skills profile can be created, edited, and persists between sessions.
+2. Submitting ad text returns a requirement list or a visible error within 30 seconds.
+   Text shorter than 200 characters is rejected before any model call, with a message
+   asking for the full ad — this is a minimum length guard against empty or accidental
+   submissions, not a claim about what makes a valid job ad.
+3. Every extracted requirement carries a `source_quote` field, and that quote is
+   present in the submitted ad text after Unicode-aware normalization: NFKC
+   normalization, removal of bidirectional and zero-width control characters,
+   collapsing of all Unicode whitespace to a single space, and case-folding.
+   Punctuation and wording are not altered — the quote must still match what the ad
+   actually says, only its script direction and casing are neutralized.
+4. A requirement whose `source_quote` is not found in the source text is not shown as
+   a requirement.
+5. Every shown requirement is labelled exactly one of `must_have` or `nice_to_have`.
+   Sentences that are not a skill, qualification, or experience requirement —
+   company background, benefits, culture statements, equal-opportunity text — must
+   not be extracted as a requirement at all; this is checked manually per §4, not by
+   an automated test, since there is no ground truth to assert against.
+6. Each analysis stores: the ad text, the requirement list, the must-have match
+   percentage, the nice-to-have match percentage, the analysis timestamp, the model
+   identifier, input and output tokens, cost, and latency in milliseconds. The two
+   percentages are absent or `null` until a skills profile has been matched against
+   the analysis — an analysis produced before matching exists is not incomplete, it
+   has simply not reached that stage yet.
+7. The ad list is ordered by must-have match percentage, highest first.
+8. The detail view lists met requirements and gaps, with must-have gaps before
+   nice-to-have gaps.
+9. Editing the profile leaves the stored percentages on existing ads unchanged.
+10. "Recalculate" on one ad updates that ad's percentages against the current profile
+    and makes no model call.
+11. A model response that is not valid JSON, or is missing required fields, produces
+    a visible failure state, never an empty list rendered as success.
+12. Matching, percentage calculation, and gap ordering are performed in ordinary code
+    with no model call.
 
 ## 3. Architectural boundaries
 
