@@ -1,43 +1,33 @@
 import { Router } from 'express';
 import { getDb } from '../db.js';
+import { validateProfileInput } from '../lib/profile.js';
 
-// C1: a single-user profile, one document, fixed id. Skills are trimmed and
-// de-duplicated case-insensitively; empty strings are rejected.
-// Stores plain skill names only. C1's optional per-skill years and the optional
-// education entry are specified but not implemented yet — that is turn 3's work.
+// C1: a single-user profile, one document, fixed id. A skill entry is
+// {name, years}; years is null (not recorded) or a non-negative integer — the
+// two are stored distinctly. education is null or a non-empty string.
 const PROFILE_ID = 'profile';
+const EMPTY_PROFILE = { _id: PROFILE_ID, skills: [], education: null, updatedAt: null };
 
 export const profileRouter = Router();
 
 profileRouter.get('/', async (req, res) => {
   const db = getDb();
   const profile = await db.collection('profiles').findOne({ _id: PROFILE_ID });
-  res.json({ ok: true, profile: profile || { _id: PROFILE_ID, skills: [], updatedAt: null } });
+  res.json({ ok: true, profile: profile || EMPTY_PROFILE });
 });
 
 profileRouter.put('/', async (req, res) => {
-  const { skills } = req.body ?? {};
-
-  if (!Array.isArray(skills) || !skills.every((s) => typeof s === 'string')) {
-    return res.status(400).json({ ok: false, message: 'skills must be an array of strings.' });
+  const validation = validateProfileInput(req.body);
+  if (!validation.ok) {
+    return res.status(400).json({ ok: false, message: validation.message });
   }
 
-  const cleaned = [];
-  const seen = new Set();
-  for (const raw of skills) {
-    const trimmed = raw.trim();
-    if (trimmed === '') continue;
-    const key = trimmed.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    cleaned.push(trimmed);
-  }
-
+  const { skills, education } = validation;
   const db = getDb();
   const updatedAt = new Date();
   await db
     .collection('profiles')
-    .updateOne({ _id: PROFILE_ID }, { $set: { skills: cleaned, updatedAt } }, { upsert: true });
+    .updateOne({ _id: PROFILE_ID }, { $set: { skills, education, updatedAt } }, { upsert: true });
 
-  res.json({ ok: true, profile: { _id: PROFILE_ID, skills: cleaned, updatedAt } });
+  res.json({ ok: true, profile: { _id: PROFILE_ID, skills, education, updatedAt } });
 });
