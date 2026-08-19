@@ -69,3 +69,5 @@ is only about how work is done in this repository.
 - `cd client && npm run dev` — client dev server (Vite, proxies `/api` to the server)
 - `cd client && npm run build` — client production build
 - `cd client && npm run lint` — client lint
+- `cd server && node --env-file=../.env scripts/backfillMatches.js` — one-off:
+  computes and stores a match snapshot for any analysis that doesn't have one yet

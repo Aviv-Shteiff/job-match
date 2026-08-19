@@ -81,3 +81,39 @@ afterward (one English full-stack role, one Hebrew role).
   border accent doesn't flip side for RTL layout. Text itself is fully readable
   either way. Not fixed now since most ads tested so far are in English (LinkedIn);
   revisit in a future design pass if Hebrew ads become more common in practice.
+
+## Turn 2 — matching, ranking, detail view
+
+- The Q1 multi-skill overstatement (substring matching a requirement like
+  "Knowledge of MongoDB and SQL-Based database" as fully met if the profile has
+  only one of the two skills) is real but currently **latent**, not visible: the
+  test profile (Node.js, MongoDB, React, SQL) happens to contain both halves of
+  every multi-skill requirement seen so far, so nothing in the current data
+  demonstrates the overstatement actually happening. A future reader shouldn't
+  read "no overstatement observed" as "the risk didn't materialize" — it means
+  the profile hasn't yet been in the specific shape (partial coverage of an
+  AND-requirement) that would expose it. Worth deliberately testing with a
+  narrower profile before trusting the percentages on a real multi-skill-heavy ad.
+- A requirement that names a role or years-of-experience rather than a specific
+  technology — "5 שנות ניסיון בפיתוח Full Stack" (5 years of Full Stack
+  development experience) — stays matchable under the approved exclude-list
+  (it's not a soft-skill marker) but can never be met by a skills-only profile,
+  since nothing in a list of skill names could ever match "Full Stack" as a
+  discrete token the way "React" or "Node.js" can. Observed as a permanent gap
+  on the real Hebrew full-stack ad. Not a bug under the current rules — a
+  skills-only profile genuinely can't express "5 years of experience" — but
+  worth watching: if this pattern recurs often, it may argue for a category
+  between "matchable" and "soft skill" for experience/seniority requirements.
+- Backfilling and re-verifying by hand against all 10 real stored analyses
+  (the 8 from turn 1, plus 2 new ones analysed this turn) confirmed every
+  computed percentage matches manual calculation, and that ranking, including
+  tie-breaking, holds up on real duplicate data: the two identical WeDev ads and
+  the two identical Hebrew backend ads sort adjacent to each other, newest
+  first, exactly as decided (G5).
+- Could not test the list → detail → back click-through in an actual browser
+  this session either — the Claude in Chrome skill wasn't available at all this
+  time (not just declined). Verified the equivalent behavior at the API level
+  instead: fetched every analysis id from the live list endpoint and confirmed
+  each detail response has the expected shape, with met + gaps + excluded
+  summing to that ad's actual requirement count for all 10 analyses. Rendering
+  and click behavior in an actual browser are still unconfirmed by me.
