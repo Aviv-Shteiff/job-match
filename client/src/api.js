@@ -21,3 +21,11 @@ export function saveProfile(skills) {
 export function submitAd(adText) {
   return apiFetch('/api/analyses', { method: 'POST', body: JSON.stringify({ adText }) });
 }
+
+export function getAnalyses() {
+  return apiFetch('/api/analyses');
+}
+
+export function getAnalysis(id) {
+  return apiFetch(`/api/analyses/${id}`);
+}

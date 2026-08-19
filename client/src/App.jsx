@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import ProfileScreen from './ProfileScreen.jsx';
 import AdScreen from './AdScreen.jsx';
+import AdListScreen from './AdListScreen.jsx';
 
 export default function App() {
   const [tab, setTab] = useState('profile');
+  const [selectedAdId, setSelectedAdId] = useState(null);
 
   return (
     <div className="app">
@@ -23,9 +25,18 @@ export default function App() {
         >
           Analyse ad
         </button>
+        <button
+          type="button"
+          className={tab === 'ads' ? 'active' : ''}
+          onClick={() => setTab('ads')}
+        >
+          Ads
+        </button>
       </nav>
       {tab === 'profile' && <ProfileScreen />}
       {tab === 'analyse' && <AdScreen />}
+      {tab === 'ads' && !selectedAdId && <AdListScreen onSelect={setSelectedAdId} />}
+      {tab === 'ads' && selectedAdId && <p>Detail view lands in the next step of this turn.</p>}
     </div>
   );
 }

@@ -115,3 +115,52 @@ textarea {
   color: #7a5c00;
   font-size: 0.9rem;
 }
+
+.ad-list {
+  list-style: none;
+  padding: 0;
+}
+
+.ad-list li {
+  margin-bottom: 0.5rem;
+}
+
+.ad-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0.9rem;
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.ad-row:hover {
+  background: #eee;
+}
+
+.ad-title {
+  flex: 1;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ad-percents {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: #444;
+  flex-shrink: 0;
+}
+
+.ad-date {
+  font-size: 0.85rem;
+  color: #777;
+  flex-shrink: 0;
+}
