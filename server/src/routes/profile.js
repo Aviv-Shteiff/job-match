@@ -2,8 +2,9 @@ import { Router } from 'express';
 import { getDb } from '../db.js';
 
 // C1: a single-user profile, one document, fixed id. Skills are trimmed and
-// de-duplicated case-insensitively; empty strings are rejected — "a list of skill
-// names" (FRAMING.md), nothing more structured than that.
+// de-duplicated case-insensitively; empty strings are rejected.
+// Stores plain skill names only. C1's optional per-skill years and the optional
+// education entry are specified but not implemented yet — that is turn 3's work.
 const PROFILE_ID = 'profile';
 
 export const profileRouter = Router();

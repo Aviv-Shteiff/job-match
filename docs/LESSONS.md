@@ -158,8 +158,10 @@ afterward (one English full-stack role, one Hebrew role).
 Decided next step (turn 3): the three permanent-gap categories above —
 experience-per-skill, education, and role/seniority — will be addressed in
 turn 3 by extending the profile and matching logic, ahead of the recalculate
-button, which moves to turn 4. This is a deliberate scope extension beyond
-FRAMING.md's current "list of skill names" profile definition, not a spec
-clarification — like turn 1 and turn 2's amendments, it will be proposed as new
-FRAMING.md/SPEC.md criteria for approval before turn 3's build prompt is
-written, not decided silently.
+button, which moves to turn 4. This is a deliberate scope extension rather than
+a clarification: FRAMING.md never defined the profile's contents at all — it
+said only "a skills profile", and the "list of skill names" phrasing came from
+turn 1's build prompt, not from the document — so this fills a silence rather
+than resolving an ambiguity. Like turn 1 and turn 2's amendments, it will be
+proposed as new FRAMING.md/SPEC.md criteria for approval before turn 3's build
+prompt is written, not decided silently.
