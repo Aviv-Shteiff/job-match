@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ProfileScreen from './ProfileScreen.jsx';
 import AdScreen from './AdScreen.jsx';
 import AdListScreen from './AdListScreen.jsx';
+import AdDetailScreen from './AdDetailScreen.jsx';
 
 export default function App() {
   const [tab, setTab] = useState('profile');
@@ -36,7 +37,9 @@ export default function App() {
       {tab === 'profile' && <ProfileScreen />}
       {tab === 'analyse' && <AdScreen />}
       {tab === 'ads' && !selectedAdId && <AdListScreen onSelect={setSelectedAdId} />}
-      {tab === 'ads' && selectedAdId && <p>Detail view lands in the next step of this turn.</p>}
+      {tab === 'ads' && selectedAdId && (
+        <AdDetailScreen analysisId={selectedAdId} onBack={() => setSelectedAdId(null)} />
+      )}
     </div>
   );
 }
