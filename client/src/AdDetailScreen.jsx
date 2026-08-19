@@ -13,7 +13,30 @@ function formatPercent(percent) {
   return percent === null || percent === undefined ? 'not yet calculated' : `${percent}%`;
 }
 
-function RequirementRow({ requirement }) {
+// C13: "the shortfall is shown as the reason for the gap rather than left to be
+// inferred." Old-shape analyses (stored before turn 3) have no gapReason at all
+// — formatGapReason returns null for that, same as any other unrecognized
+// shape, so the row just renders without a reason line rather than breaking.
+function formatGapReason(gapReason) {
+  if (!gapReason) return null;
+  switch (gapReason.code) {
+    case 'skill_missing':
+      return 'Not in your profile.';
+    case 'no_years_recorded':
+      return 'In your profile, but no years of experience recorded.';
+    case 'years_short':
+      return `Requires ${gapReason.required}+ years; your profile records ${gapReason.recorded}.`;
+    case 'no_education_recorded':
+      return 'No education recorded in your profile.';
+    case 'education_mismatch':
+      return "Your recorded education doesn't name this field.";
+    default:
+      return null;
+  }
+}
+
+function RequirementRow({ requirement, showReason = false }) {
+  const reasonText = showReason ? formatGapReason(requirement.gapReason) : null;
   return (
     <li>
       <div className="requirement-text" dir="auto">
@@ -22,6 +45,7 @@ function RequirementRow({ requirement }) {
       <div className="requirement-quote" dir="auto">
         &ldquo;{requirement.source_quote}&rdquo;
       </div>
+      {reasonText && <div className="gap-reason">{reasonText}</div>}
     </li>
   );
 }
@@ -122,7 +146,7 @@ export default function AdDetailScreen({ analysisId, onBack }) {
           <h4>Must-have gaps</h4>
           <ul className="requirement-list gap-list">
             {gapMustHave.map((r, i) => (
-              <RequirementRow key={i} requirement={r} />
+              <RequirementRow key={i} requirement={r} showReason />
             ))}
           </ul>
         </>
@@ -132,7 +156,7 @@ export default function AdDetailScreen({ analysisId, onBack }) {
           <h4>Nice-to-have gaps</h4>
           <ul className="requirement-list gap-list">
             {gapNiceToHave.map((r, i) => (
-              <RequirementRow key={i} requirement={r} />
+              <RequirementRow key={i} requirement={r} showReason />
             ))}
           </ul>
         </>

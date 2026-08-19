@@ -206,6 +206,12 @@ textarea {
   background: #fffbeb;
 }
 
+.gap-reason {
+  font-size: 0.85rem;
+  color: #92400e;
+  margin-top: 0.3rem;
+}
+
 .excluded-list li {
   border-left-color: #999;
   background: #f2f2f2;
