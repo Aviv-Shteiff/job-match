@@ -1,6 +1,7 @@
 import express from 'express';
 import { connectDb } from './db.js';
 import { analysesRouter } from './routes/analyses.js';
+import { profileRouter } from './routes/profile.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,6 +13,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/analyses', analysesRouter);
+app.use('/api/profile', profileRouter);
 
 async function start() {
   await connectDb();
