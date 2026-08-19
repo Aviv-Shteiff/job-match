@@ -5,3 +5,65 @@ body {
   padding: 0 1rem;
   color: #1a1a1a;
 }
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.tabs button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  border-bottom: 2px solid transparent;
+}
+
+.tabs button.active {
+  border-bottom-color: #333;
+  font-weight: 600;
+}
+
+.skill-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.skill-list li {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.skill-list input {
+  flex: 1;
+  padding: 0.4rem;
+  font-size: 1rem;
+}
+
+.save-row {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.save-status.success {
+  color: #1a7f37;
+}
+
+.save-status.failure {
+  color: #b91c1c;
+}
+
+.failure {
+  color: #b91c1c;
+  border: 1px solid #b91c1c;
+  background: #fef2f2;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+}
