@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getAnalyses, deleteAnalysis } from './api.js';
+import Modal from './Modal.jsx';
 
 // Fallback when neither title nor company was entered (C18). Derived at render
 // time from the ad's own text — nothing new needs to be stored for this case.
@@ -38,6 +39,7 @@ export default function AdListScreen({ onSelect }) {
   const [state, setState] = useState('loading'); // loading | loaded | error
   const [analyses, setAnalyses] = useState([]);
   const [deleteError, setDeleteError] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null); // { id, label } | null
 
   useEffect(() => {
     let cancelled = false;
@@ -55,12 +57,11 @@ export default function AdListScreen({ onSelect }) {
     };
   }, []);
 
-  // C19: deletion is permanent and takes one confirmation — window.confirm is
-  // that one confirmation, with no dependency and no custom dialog to build.
-  async function handleDelete(id, label) {
-    const confirmed = window.confirm(`Delete "${label}"? This cannot be undone.`);
-    if (!confirmed) return;
-
+  // C19: deletion is permanent and takes one confirmation — the in-app Modal is
+  // that one confirmation, replacing the native window.confirm() dialog.
+  async function confirmDelete() {
+    const { id } = pendingDelete;
+    setPendingDelete(null);
     setDeleteError(null);
     const result = await deleteAnalysis(id);
     if (result.ok) {
@@ -112,7 +113,7 @@ export default function AdListScreen({ onSelect }) {
                 <button
                   type="button"
                   className="delete-button"
-                  onClick={() => handleDelete(analysis._id, label.primary)}
+                  onClick={() => setPendingDelete({ id: analysis._id, label: label.primary })}
                   aria-label="Delete this ad"
                 >
                   Delete
@@ -122,6 +123,17 @@ export default function AdListScreen({ onSelect }) {
           );
         })}
       </ul>
+      {pendingDelete && (
+        <Modal
+          title="Delete this ad?"
+          message={`Delete "${pendingDelete.label}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          danger
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </section>
   );
 }
