@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '../db.js';
 import { analyseAd } from '../lib/analyse.js';
 import { rankAnalyses } from '../lib/ranking.js';
+import { recalculateMatch } from '../lib/recalculate.js';
 
 const CLIENT_ERROR_REASONS = new Set(['too_short', 'too_long', 'invalid_metadata']);
 
@@ -76,6 +77,61 @@ analysesRouter.delete('/:id', async (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+// C10/Part 3: the only route that updates an existing analysis document —
+// replaces its match snapshot against the current profile, with no model call.
+// Everything else on the document (ad text, requirements, title, company, link,
+// analyzedAt, model-call metadata) is untouched, since recalculateMatch() returns
+// only the three fields $set below.
+analysesRouter.post('/:id/recalculate', async (req, res) => {
+  const objectId = parseObjectId(req.params.id);
+  if (!objectId) {
+    return res.status(400).json({ ok: false, message: 'Invalid analysis id.' });
+  }
+
+  const db = getDb();
+  const analysis = await db.collection('analyses').findOne({ _id: objectId });
+  if (!analysis) {
+    return res.status(404).json({ ok: false, message: 'Analysis not found.' });
+  }
+
+  const storedProfile = await db.collection('profiles').findOne({ _id: 'profile' });
+  const profile = { skills: storedProfile?.skills ?? [], education: storedProfile?.education ?? null };
+  const update = recalculateMatch(analysis.requirements, profile);
+
+  await db.collection('analyses').updateOne({ _id: objectId }, { $set: update });
+
+  res.json({ ok: true, analysis: { ...analysis, ...update } });
+});
+
+// C20: the same operation as recalculate, applied to every stored analysis in one
+// action. Reports per-ad outcomes rather than aborting on the first failure — with
+// no model call involved, a failure here means a database error, and a partial
+// result silently reported as complete would be worse than a slower, honest one.
+analysesRouter.post('/recalculate-all', async (req, res) => {
+  const db = getDb();
+  const storedProfile = await db.collection('profiles').findOne({ _id: 'profile' });
+  const profile = { skills: storedProfile?.skills ?? [], education: storedProfile?.education ?? null };
+
+  const analyses = await db
+    .collection('analyses')
+    .find({}, { projection: { requirements: 1 } })
+    .toArray();
+
+  let succeeded = 0;
+  const failed = [];
+  for (const analysis of analyses) {
+    try {
+      const update = recalculateMatch(analysis.requirements, profile);
+      await db.collection('analyses').updateOne({ _id: analysis._id }, { $set: update });
+      succeeded += 1;
+    } catch (err) {
+      failed.push({ id: String(analysis._id), message: err.message });
+    }
+  }
+
+  res.json({ ok: true, total: analyses.length, succeeded, failed });
 });
 
 analysesRouter.post('/', async (req, res) => {
