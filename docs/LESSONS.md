@@ -274,3 +274,38 @@ this list came out of that amendment and are still unscoped.
   two collections will drift apart over time, and `modelCalls` will contain
   entries pointing at analyses that no longer exist. Nothing reads that
   collection today. Noted so it isn't a surprise to whoever first does.
+
+## Turn 4 — ad metadata, deletion, grouped profile
+
+- The delete-then-re-paste remedy for a badly-labelled ad — the mechanism the
+  spec amendment relies on for fixing the 24 ads that predate title/company —
+  was tested for real, not just assumed to work: deleted a duplicate "About
+  the job / WeDev Technologies" analysis, re-submitted the identical ad text
+  with a title and company this time, and it came back correctly labelled
+  "Full Stack Developer — WeDev Technologies". The cycle costs one model call
+  and works exactly as the amendment describes.
+- Deleting is confirmed genuinely hard and genuinely isolated: after the test
+  above, `analyses` moved from 26 to 25 to 26 again (delete, then re-add),
+  while `modelCalls` only ever grew (43 total by the end of this turn) —
+  confirming, on real data rather than by reading the code, that a delete
+  never touches the call log, which is the specific claim C19 makes.
+- The migration for the 7 profile entries and the move-between-sections
+  control were exercised together, not just separately: the migration wrote
+  `group: 'skill'` to all 7 (including "Full Stack"), and the entry was then
+  moved to Roles & Experience through the same PUT the profile screen uses
+  — confirming the whole path C1/Q1/Q2 describes, migration through to a
+  corrected profile, works end to end rather than only in isolation at each
+  step.
+- Both gaps flagged when this turn's plan was written are still open, as
+  expected — recorded here so they don't need rediscovering: C19's claim that
+  a deleted analysis's model-call record survives is unfalsifiable, since
+  `modelCalls` and `analyses` share no linking field in either direction
+  (confirmed directly against both collections' schemas); and the delete
+  endpoint — the app's first destructive operation — has no automated
+  regression test, verified live instead, consistent with every other route
+  in this codebase but still the highest-stakes gap in the suite.
+- 3 of 27 stored analyses now carry an entered title, all from this turn's
+  own testing. The other 24 remain exactly as predicted when the amendment
+  was drafted: unlabelled, distinguishable only by date, fixable only by
+  delete-and-re-paste — which the first finding above now confirms actually
+  works, not just in principle.
