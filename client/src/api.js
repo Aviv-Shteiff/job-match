@@ -29,3 +29,7 @@ export function getAnalyses() {
 export function getAnalysis(id) {
   return apiFetch(`/api/analyses/${id}`);
 }
+
+export function deleteAnalysis(id) {
+  return apiFetch(`/api/analyses/${id}`, { method: 'DELETE' });
+}
