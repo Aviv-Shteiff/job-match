@@ -85,6 +85,13 @@ export default function AdScreen() {
         </div>
       </form>
 
+      {status === 'submitting' && (
+        <div className="loading-overlay">
+          <div className="spinner" aria-hidden="true" />
+          <p>Analysing your ad — this can take up to 30 seconds…</p>
+        </div>
+      )}
+
       {status === 'failure' && failure && (
         <div className="failure" role="alert">
           <strong>Analysis failed:</strong> {FAILURE_LABELS[failure.reason] || 'Something went wrong.'}
