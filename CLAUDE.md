@@ -71,3 +71,5 @@ is only about how work is done in this repository.
 - `cd client && npm run lint` — client lint
 - `cd server && node --env-file=../.env scripts/backfillMatches.js` — one-off:
   computes and stores a match snapshot for any analysis that doesn't have one yet
+- `cd server && node --env-file=../.env scripts/migrateProfileGroups.js` — one-off:
+  adds the display-only `group` field to any profile skill entry that lacks one
