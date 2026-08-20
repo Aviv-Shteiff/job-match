@@ -345,3 +345,48 @@ this list came out of that amendment and are still unscoped.
   general modernization), are earmarked for a dedicated design turn after
   recalculate (turn 5) is built — not before, since the screens may still
   change shape until the remaining functional piece is in place.
+
+## Turn 5 — recalculate, and three UX fixes
+
+- The prompt expected no spec amendment; there were four. The one worth
+  remembering is that Part 3 — not C9 — was blocking recalculate: a line
+  added in turn 4 ("a stored analysis is never modified after it is
+  created — it can be created or deleted, and nothing else") contradicted
+  C10, which has been in the spec since v0.1. A defect this project
+  introduced, not one inherent to the spec. Worth the general lesson: a
+  spec amendment written to justify one turn's decision can quietly
+  foreclose a criterion several turns older, and nothing catches that
+  automatically — it surfaced only because this turn happened to need the
+  thing the earlier wording forbade.
+- Recorded, deliberately not built: 10 of the 27 stored analyses predated
+  turn 3's years/education extraction fields. The user resolved this by
+  deleting all of them rather than by code handling the gap — "this case
+  no longer exists in the current data." If an analysis missing
+  years_required/is_education_requirement ever appears again by some
+  other path, the recorded posture is that recalculate should refuse with
+  a clear message rather than silently compute under different semantics
+  (a missing years_required reads as "no threshold," producing real
+  numbers that mean something different from a post-turn-3 analysis with
+  nothing to distinguish them on screen). No guard exists for this today;
+  see the comment in server/src/lib/recalculate.js.
+- Recalculate was tested against real, meaningful profile edits, not just
+  a full wipe-and-restore: added AWS (3 years) to the live profile and
+  recalculated a real DevOps ad whose only gaps were AWS, Docker, CI/CD,
+  Kubernetes, and Terraform. Must-have match moved 25% → 50%, with AWS
+  correctly shifting from the gaps list to the met list and nothing else
+  changing. Reverted and ran recalculate-all to bring every analysis back
+  in sync with the restored profile — confirmed at 25% again on the same
+  ad, which is itself a live demonstration that recalculate-all is a
+  reliable way to resynchronize the whole list after any profile change,
+  not only the one-off scenario it was built for.
+- The match-date logic (matchDateInfo, duplicated between AdListScreen
+  and AdDetailScreen) needed a 5-second tolerance that wasn't anticipated
+  in the plan: buildMatchSnapshot runs synchronously, milliseconds before
+  analyzedAt is set, on every freshly analysed ad — so a naive
+  matchedAt !== analyzedAt check would have marked every single ad as
+  "recalculated" from the moment it was created. Confirmed against a
+  genuinely recalculated ad (9 hours apart) and a simulated fresh one
+  (2ms apart) before trusting the logic.
+- modelCalls has grown to 44 entries against 17 analyses (turn 4's
+  LESSONS.md entry predicted this drift; now directly observed). Still
+  nothing reads that collection.
