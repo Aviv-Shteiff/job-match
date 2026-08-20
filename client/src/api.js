@@ -18,8 +18,8 @@ export function saveProfile(payload) {
   return apiFetch('/api/profile', { method: 'PUT', body: JSON.stringify(payload) });
 }
 
-export function submitAd(adText) {
-  return apiFetch('/api/analyses', { method: 'POST', body: JSON.stringify({ adText }) });
+export function submitAd(adText, metadata) {
+  return apiFetch('/api/analyses', { method: 'POST', body: JSON.stringify({ adText, ...metadata }) });
 }
 
 export function getAnalyses() {

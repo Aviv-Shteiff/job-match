@@ -11,11 +11,15 @@ const FAILURE_LABELS = {
   model_call_failed: 'The model call failed.',
   model_timeout: 'The model did not respond in time.',
   missing_ad_text: 'No ad text was submitted.',
+  invalid_metadata: 'One of the fields below is not valid.',
   network_error: 'Could not reach the server.',
 };
 
 export default function AdScreen() {
   const [adText, setAdText] = useState('');
+  const [title, setTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [url, setUrl] = useState('');
   const [status, setStatus] = useState('idle'); // idle | submitting | success | failure
   const [result, setResult] = useState(null);
   const [failure, setFailure] = useState(null);
@@ -26,7 +30,7 @@ export default function AdScreen() {
     setResult(null);
     setFailure(null);
 
-    const response = await submitAd(adText);
+    const response = await submitAd(adText, { title, company, url });
 
     if (response.ok) {
       setResult(response.analysis);
@@ -52,6 +56,28 @@ export default function AdScreen() {
           placeholder="Paste the full job ad text here…"
           dir="auto"
         />
+        <div className="ad-metadata-row">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Job title (optional)"
+            dir="auto"
+          />
+          <input
+            type="text"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            placeholder="Company (optional)"
+            dir="auto"
+          />
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Link to posting (optional)"
+          />
+        </div>
         <div>
           <button type="submit" disabled={status === 'submitting' || adText.trim() === ''}>
             {status === 'submitting' ? 'Analysing…' : 'Analyse'}
