@@ -309,3 +309,39 @@ this list came out of that amendment and are still unscoped.
   was drafted: unlabelled, distinguishable only by date, fixable only by
   delete-and-re-paste — which the first finding above now confirms actually
   works, not just in principle.
+- Tested end to end on a real ad with all three optional fields filled in
+  (title "Backend Developer", company "FinPay Europe", posting link).
+  Confirmed live: the entered title and company display in the ad list in
+  normal weight, not the italic/grey derived-label styling — the two cases
+  read as visibly different, as C18 intends. The posting link renders as a
+  working clickable link on the detail view only, never in the list.
+- Confirmed live: a "Full Stack" role entry (4 years) did NOT match a "4+
+  years of experience as a Backend Developer" requirement on this ad — the
+  same wording-sensitivity pitfall already flagged in turn 3, reproduced on
+  independent data with a different role pairing (Full Stack vs. Backend,
+  not Full Stack vs. Full Stack Developer this time).
+- Confirmed live: a years-recorded-but-empty skill (Git, no years) produces
+  a distinct gap message — "In your profile, but no years of experience
+  recorded" — different from "Not in your profile," used when the skill is
+  absent entirely. Both messages were designed for in turn 3; this is the
+  first live confirmation they actually render differently rather than
+  collapsing into the same text.
+- Confirmed live: the delete control works correctly end to end, but its
+  confirmation is a raw browser `window.confirm()` dialog — functional, but
+  visually inconsistent with the rest of the app.
+
+### UX findings from real use (not this turn's scope)
+
+- The delete confirmation should be an in-app modal styled to match the
+  app, replacing the native `window.confirm()` dialog.
+- The "Analysing…" state during ad submission is currently just a disabled
+  button label. A more visible loading indicator (e.g. a spinner with a
+  dimmed background) would make it clearer that something is happening,
+  especially given observed latency of 15-25 seconds on some ads.
+- The "profile saved" confirmation is plain text next to the Save button. A
+  nicer transient confirmation (e.g. a toast notification) would read
+  better.
+- These three, plus a full visual pass (colours, typography, buttons,
+  general modernization), are earmarked for a dedicated design turn after
+  recalculate (turn 5) is built — not before, since the screens may still
+  change shape until the remaining functional piece is in place.
