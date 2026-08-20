@@ -1,5 +1,6 @@
 import { getDb } from '../db.js';
 import { checkAdTextLength } from './guards.js';
+import { validateAdMetadata } from './adMetadata.js';
 import { buildExtractionPrompt } from './extractionPrompt.js';
 import { callOpenRouter } from './openrouter.js';
 import { validateExtractionResponse } from './validateResponse.js';
@@ -12,12 +13,17 @@ import { FAILURE_REASONS, failure } from './failures.js';
 // grounding. A failure at any stage returns a typed failure and stores nothing in
 // `analyses` — but a model call, if one was made, is always logged by
 // callOpenRouter regardless of what happens afterward.
-export async function analyseAd(rawAdText) {
+export async function analyseAd(rawAdText, rawMetadata = {}) {
   const adText = rawAdText.trim();
 
   const lengthCheck = checkAdTextLength(adText);
   if (!lengthCheck.ok) {
     return lengthCheck;
+  }
+
+  const metadataResult = validateAdMetadata(rawMetadata);
+  if (!metadataResult.ok) {
+    return failure(FAILURE_REASONS.INVALID_METADATA, metadataResult.message);
   }
 
   const prompt = buildExtractionPrompt(adText);
@@ -48,6 +54,10 @@ export async function analyseAd(rawAdText) {
 
   const analysis = {
     adText,
+    // C17: optional, independent of each other and of the ad text itself.
+    title: metadataResult.title,
+    company: metadataResult.company,
+    url: metadataResult.url,
     requirements: accepted,
     rejectedRequirements: rejected.map(({ requirement, reason }) => ({
       ...requirement,

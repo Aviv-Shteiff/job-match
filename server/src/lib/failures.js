@@ -4,6 +4,7 @@
 export const FAILURE_REASONS = {
   TOO_SHORT: 'too_short',
   TOO_LONG: 'too_long',
+  INVALID_METADATA: 'invalid_metadata',
   NOT_JSON: 'not_json',
   WRONG_SHAPE: 'wrong_shape',
   BAD_LABEL: 'bad_label',

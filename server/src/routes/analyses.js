@@ -4,7 +4,7 @@ import { getDb } from '../db.js';
 import { analyseAd } from '../lib/analyse.js';
 import { rankAnalyses } from '../lib/ranking.js';
 
-const CLIENT_ERROR_REASONS = new Set(['too_short', 'too_long']);
+const CLIENT_ERROR_REASONS = new Set(['too_short', 'too_long', 'invalid_metadata']);
 
 export const analysesRouter = Router();
 
@@ -15,7 +15,19 @@ analysesRouter.get('/', async (req, res) => {
   const db = getDb();
   const analyses = await db
     .collection('analyses')
-    .find({}, { projection: { adText: 1, mustHavePercent: 1, niceToHavePercent: 1, analyzedAt: 1 } })
+    .find(
+      {},
+      {
+        projection: {
+          adText: 1,
+          title: 1,
+          company: 1,
+          mustHavePercent: 1,
+          niceToHavePercent: 1,
+          analyzedAt: 1,
+        },
+      },
+    )
     .toArray();
 
   res.json({ ok: true, analyses: rankAnalyses(analyses) });
@@ -46,7 +58,8 @@ analysesRouter.post('/', async (req, res) => {
     return res.status(400).json({ ok: false, reason: 'missing_ad_text', message: 'adText is required.' });
   }
 
-  const result = await analyseAd(adText);
+  const { title, company, url } = req.body ?? {};
+  const result = await analyseAd(adText, { title, company, url });
 
   if (!result.ok) {
     const status = CLIENT_ERROR_REASONS.has(result.reason) ? 400 : 502;
