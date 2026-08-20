@@ -47,3 +47,167 @@ tell a component referenced only inside JSX is "used," which needs
 after the originally configured model turned out to be withdrawn from OpenRouter's
 free tier) was proposed with evidence and approved before building continued —
 see `docs/LESSONS.md` for what that testing found.
+
+## Turn 2 — matching, ranking, detail view
+
+Requested: match percentage calculation for a stored analysis's requirements
+against the current skills profile, computed in ordinary code with no model call;
+the ranked ad list, ordered by must-have percentage; and the detail view, showing
+met requirements and gaps with must-have gaps before nice-to-have gaps. The
+recalculate button stayed out of scope. Two things came from `docs/LESSONS.md`'s
+open questions rather than from a blank slate: the principle that soft-skill
+requirements are excluded from the percentage calculation entirely was given
+pre-decided, with the exact classification mechanism left for the agent to
+propose; and the multi-skill-requirement question (should "Knowledge of MongoDB
+and SQL-Based database" require both named skills or just one) was named directly
+as still open, to be presented with options and trade-offs rather than picked.
+
+Four gaps were surfaced during planning and resolved by the user before building
+started:
+
+- **Multi-skill requirements** — substring match now (accepting that a profile
+  covering only one of two named skills scores the requirement as fully met),
+  split at match-time in code, or defer splitting to a later turn's extraction
+  change? → **Substring now, split at extraction later** — the model has the ad's
+  context and language understanding; code parsing conjunctions in two languages
+  does not.
+- **Matchable classification mechanism**, for the soft-skill exclusion principle
+  already given — an exclude-list of soft-skill markers, an include-list of known
+  tech terms, or an exclude-list that also drops no-named-tool borderlines? →
+  **Exclude-list, clearly-soft markers only** — borderline concepts like
+  "responsive design" and "RESTful APIs" stay in and show as a gap if unmet,
+  erring toward visible gaps per SPEC §1.
+- **The 8 existing turn-1 analyses**, stored with null percentages — backfill
+  against the current profile, leave null, or delete? → **Backfill all 8** —
+  makes the ranked list demonstrable immediately; acceptable since this is test
+  data, not history that needs preserving.
+- **Variant tolerance** for skill matching, since SPEC §5 already warns exact
+  string equality under-reports — plain substring, word-boundary-only, or
+  word-boundary plus a fuzzy/edit-distance fallback? → **Word-boundary matching
+  plus a small alias table** (js/javascript, ts/typescript, postgres/postgresql,
+  k8s/kubernetes) — plain substring would wrongly match profile "SQL" inside ad
+  text "NoSQL"; fuzzy matching risks a wrong match silently inflating the
+  percentage with no visible trace.
+
+These four resolutions were not written into `docs/SPEC.md` as new criteria — turn
+2 extended behaviour within criteria the spec already had (C6, C7, C8, C12) rather
+than adding new ones, so the record lives only in `docs/LESSONS.md` and the code's
+own comments.
+
+## Turn 3 — profile depth (years, education, roles)
+
+Requested: closing three permanent-gap categories turn 2's testing had found —
+years of experience per skill, education, and role/seniority requirements — none
+of which a skills-only profile could ever satisfy, no matter how it was edited.
+Framed explicitly as a scope extension, not a clarification, and split into two
+exchanges: a spec amendment approved on its own first, then a separate build plan
+once that amendment was committed.
+
+Three decisions came pre-set in the amendment prompt: each profile skill gains an
+optional years-of-experience number, with no separate seniority label; the
+profile gains one optional free-text education field; and role or seniority
+experience is entered as an ordinary skill entry in the same list, not a separate
+schema concept. Four more were resolved before the amendment text was finalized:
+
+- **Scoring a years shortfall** ("3+ years" against a profile skill recording 2)
+  — strict gap, partial credit, met-but-flagged, or a tolerance band? → **Strict
+  gap, with the shortfall shown as the reason** — keeps the percentage a plain
+  count of met requirements and avoids repeating the multi-skill overstatement
+  turn 2 had just confirmed.
+- **Where the required-years number comes from** — the model reading it off the
+  ad at extraction time, code parsing the stored requirement text, or a hybrid? →
+  **The model supplies it** — reading the ad is the model's job under SPEC §3;
+  comparing the number to the profile stays ordinary code.
+- **How an education entry satisfies a degree requirement** — field-of-study
+  overlap after stripping degree-type words, presence-only (any entry satisfies
+  any requirement), or an exact-ish match? → **Field-of-study overlap**, degree
+  words set aside on both sides.
+- **The 10 existing analyses**, scored under rules with no years or education
+  concept at all — re-analyse, delete, or mark as scored under old rules? →
+  **Re-analyse all 10** against the new extraction, creating new analyses rather
+  than overwriting, per C9's immutability rule.
+
+The amendment landed in `docs/SPEC.md` as criteria 13–16 plus extensions to C1 and
+C6, and moved Part 3's model/code boundary for the first time: classifying a
+requirement now includes reading off any stated years and whether it asks for a
+degree, justified as still "reading the ad" — the model's job.
+
+A separate build-plan exchange followed once the amendment was committed, with
+three more decisions:
+
+- **When to re-analyse the 10 existing ads** — immediately once the code landed,
+  or after the user filled in real years and education through the new profile
+  screen? → **After** — re-analysing first would match every ad against an
+  all-null-years profile, turning every years requirement into a gap with no way
+  to fix it until turn 4's recalculate. This put a deliberate pause in the middle
+  of the turn.
+- **Whether `years_required` and `is_education_requirement` are required keys**
+  on every extracted requirement, given the free model already times out
+  occasionally — required-and-present (value may be null), or optional with
+  defaults? → **Required present** — a silently-omitted `years_required` would
+  turn a threshold requirement into a thresholdless one and overstate the match
+  with no trace, accepting a higher visible-failure rate as the cost.
+- **When several profile skills match one requirement, whose years count** — e.g.
+  Node.js (5y) and Express (1y) both matching "3+ years with Node.js and
+  Express" — highest, lowest, or must-all-satisfy? → **Highest years wins** —
+  lowest or all-must-satisfy both create a perverse incentive where adding a
+  barely-used skill lowers the match on requirements already comfortably met.
+- **Refining the field-of-study rule**: C15's own example, "an equivalent
+  technical degree," didn't actually reduce to "no field" under just the
+  degree-word stoplist, since real sentences always carry grammatical
+  scaffolding — a whitelist of known fields, plain token overlap, or a second
+  stoplist? → **A second stoplist of generic qualifiers** (equivalent, technical,
+  relevant, related, similar, field, or) alongside the degree-word one.
+
+## Turn 4 — ad metadata, deletion, grouped profile
+
+Requested: three items `docs/LESSONS.md`'s "ideas for a future turn" section had
+recorded but not scoped — splitting the profile screen into Skills and Roles &
+Experience sections, optional job title/company/posting-link fields when
+submitting an ad (shown in the list, with the link on the detail view only), and
+a hard delete for analysed ads. Promoted ahead of the recalculate button, which
+moved to a later turn. Split into a spec amendment first, then a build plan.
+
+Two gaps were resolved before the amendment text was finalized:
+
+- **How the profile screen knows which entries are roles** — the profile stored
+  only `{name, years}`, so nothing distinguished "Full Stack" from "Node.js," and
+  C16 as written forbade both a stored field and a code path for learning it.
+  Store a display-only group field, guess from the entry's name, or don't split
+  at all and just improve the prompting? → **Store a display-only group field**
+  on each entry, defaulting to `'skill'` — a name-guessing heuristic would get
+  Hebrew or unusual role names wrong with no way to correct it, and would still
+  need the same C16 amendment for no reliability gained.
+- **Whether title/company/link can be added to an analysis after the fact** — no
+  (paste-time only), yes (freely editable), or yes-once (only while blank)? →
+  **No, paste-time only** — keeps "a stored analysis is never modified" absolute
+  with no exception fields; the remedy for badly-labelled existing ads is
+  delete-and-re-paste, which the new delete control makes possible.
+
+This surfaced that the premise "display-only, same data shape" didn't hold: the
+grouping is a real stored field, which makes all three of this turn's changes
+schema-touching, not two of three as originally framed. The amendment added
+`docs/FRAMING.md` definition-of-done items #12–14 and `docs/SPEC.md` criteria
+17–19, extended C1 and C6, and narrowed C16 to scope its "no distinct kind" claim
+to matching only, since the grouped screen necessarily treats roles distinctly
+for display.
+
+A separate build-plan exchange followed, with three more decisions:
+
+- **The one-off migration for the 7 existing profile entries** (including "Full
+  Stack," the entry that motivated the whole feature) — migrate all to `'skill'`
+  and let the user re-file by hand, migrate while pre-classifying likely roles by
+  name, or default a missing group at read time with no migration at all? →
+  **Migrate all to `'skill'`, re-file by hand** — a script guessing at stored
+  data and writing the guess is the same fragile name-matching already rejected
+  for the display layer.
+- **How an entry moves between the two sections** — a small move control on each
+  row, or delete-and-retype in the other section? → **A small control on each
+  row** — retyping would silently lose the entry's years value, and "Full Stack"
+  (4 years) is exactly the kind of entry likely to need moving.
+- **Test coverage for the delete endpoint**, the app's first destructive
+  operation — live verification with no new dependency, add `supertest`, or
+  extract just the id-parsing logic into a tested pure function? → **Live
+  verification, no dependency** — follows the precedent that every route in this
+  codebase is curl-verified while only pure functions are unit-tested; accepted
+  cost is that the one destructive endpoint has no automated regression test.
