@@ -8,6 +8,14 @@ const CLIENT_ERROR_REASONS = new Set(['too_short', 'too_long', 'invalid_metadata
 
 export const analysesRouter = Router();
 
+function parseObjectId(rawId) {
+  try {
+    return new ObjectId(rawId);
+  } catch {
+    return null;
+  }
+}
+
 // C7: the ad list is ordered by must-have match percentage, highest first —
 // computed in ordinary code (ranking.js), not left to storage order or a
 // database-level sort, so the same tested tie-breaking rules apply everywhere.
@@ -34,10 +42,8 @@ analysesRouter.get('/', async (req, res) => {
 });
 
 analysesRouter.get('/:id', async (req, res) => {
-  let objectId;
-  try {
-    objectId = new ObjectId(req.params.id);
-  } catch {
+  const objectId = parseObjectId(req.params.id);
+  if (!objectId) {
     return res.status(400).json({ ok: false, message: 'Invalid analysis id.' });
   }
 
@@ -49,6 +55,27 @@ analysesRouter.get('/:id', async (req, res) => {
   }
 
   res.json({ ok: true, analysis });
+});
+
+// C19: a hard delete — the analysis document is removed outright, no soft-delete
+// flag, no archive (FRAMING.md's constraints: permanence is a decision, not
+// something a later turn quietly softens). The modelCalls collection is
+// untouched: nothing links a call to the analysis it produced, in either
+// direction, so there is no record to find and remove even if this wanted to.
+analysesRouter.delete('/:id', async (req, res) => {
+  const objectId = parseObjectId(req.params.id);
+  if (!objectId) {
+    return res.status(400).json({ ok: false, message: 'Invalid analysis id.' });
+  }
+
+  const db = getDb();
+  const { deletedCount } = await db.collection('analyses').deleteOne({ _id: objectId });
+
+  if (deletedCount === 0) {
+    return res.status(404).json({ ok: false, message: 'Analysis not found.' });
+  }
+
+  res.json({ ok: true });
 });
 
 analysesRouter.post('/', async (req, res) => {
