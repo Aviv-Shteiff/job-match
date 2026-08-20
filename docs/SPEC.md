@@ -100,9 +100,9 @@ Where this document is silent, decide in favour of making a real gap more visibl
 - A stored analysis is never modified after it is created — it can be created or
   deleted, and nothing else. The title, company, and link are captured at submission
   and are as fixed afterwards as the model's own output.
-- The profile is one document: skill entries, each a name with optional years, and
-  one optional education string. Roles and seniority are skill entries, not a second
-  schema.
+- The profile is one document: skill entries, each a name with optional years and a
+  display group, and one optional education string. Roles and seniority are skill
+  entries, not a second schema.
 - The frontend is React with Vite, in plain JavaScript. No TypeScript anywhere.
 - The model is called only to extract and classify requirements from ad text.
   Classifying includes reading off what the ad states about a requirement: its
