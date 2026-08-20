@@ -194,14 +194,14 @@ and gap reason was checked by hand against that profile.
   both ads match at all — confirming the wording-sensitivity pitfall
   documented in SPEC.md §5 mattered in exactly the way it warned about, and
   that avoiding it was a real, correct choice rather than a hypothetical one.
-- The Q1 multi-skill overstatement (confirmed once already, in turn 2's
-  testing, on "MongoDB and SQL-Based database") recurred on different real
-  data with a different shape: "Strong proficiency in vanilla JavaScript and
-  React" was marked met because the profile's React entry alone satisfies the
-  substring match — the profile has no JavaScript entry at all, not merely a
-  weaker one. Same mechanism, two independent real confirmations now. Still
-  deferred to a future turn's extraction change per the turn-2 decision, but
-  worth recording that it isn't a one-off.
+- The Q1 multi-skill overstatement has now been confirmed on three separate
+  real ads total across two turns: turn 2's original case ("MongoDB and
+  SQL-Based database," met via MongoDB alone), plus two more found in later
+  testing — including "Strong proficiency in vanilla JavaScript and React,"
+  marked met through the profile's React entry alone with no JavaScript entry
+  in the profile at all. Same mechanism every time. Still deferred to a
+  future turn's extraction change per the turn-2 decision, but worth
+  recording that it keeps recurring, not a one-off.
 - Multi-skill years matching (turn-3 Q3: highest years among matching skills
   with years recorded) was confirmed correctly ignoring a null: "3+ years of
   experience with Node.js and Express" matched Node.js (5y) and Express (no
@@ -217,3 +217,41 @@ and gap reason was checked by hand against that profile.
   — the profile genuinely doesn't fit this ad — but worth naming as a real
   example of the tool producing a harsh, honest score rather than softening
   a bad fit, which is the whole point of building it.
+- Confirmed live on a real ad, by the user, on top of the above: a threshold
+  gap shows the exact reason as designed — a React requirement stating "5+
+  years" against a profile recording 3 years produced "Requires 5+ years;
+  your profile records 3." A borderline case in the same session — MongoDB
+  required at "2+ years" against a profile recording exactly 2 — correctly
+  scored as met, not a gap: the boundary condition (recorded years == required
+  years) works.
+- Confirmed live: the education field worked end to end on a real ad — a
+  profile education entry of "BSc Computer Science" matched an ad requirement
+  for "Bachelor's degree in Computer Science or equivalent technical degree,"
+  per Q4's field-of-study rule.
+- Confirmed live, and worth flagging explicitly: a "Full Stack" profile entry
+  (4 years) did NOT match a real ad's requirement of "5+ years of experience
+  as a Backend Developer." This is exactly the wording-sensitivity pitfall
+  SPEC.md §5 already predicted, not a bug — a role entry only matches a
+  requirement naming that same role. Closing this specific gap would need a
+  separate "Backend" (or "Backend Developer") entry in the profile.
+
+### Ideas for a future turn (not scoped, just recorded)
+
+Surfaced while reviewing the app in real use. None of this is turn 4's scope
+by default — turn 4 was already earmarked for the recalculate button. Recorded
+as candidates to discuss, not a plan.
+
+- Split the profile screen into two visually distinct sections: "Skills" for
+  technologies/tools, and "Roles & experience" for role-level entries like
+  "Full Stack" or "Backend". Same underlying data (one skills list),
+  display-only change. Directly motivated by the Backend Developer gap above
+  — a clearer prompt to add role entries would make gaps like that easier to
+  close.
+- Let the user optionally enter a job title and/or company name when pasting
+  an ad, and optionally a URL to the original posting. The ad list currently
+  shows auto-derived titles like "About the job," which aren't useful for
+  telling analysed ads apart, and there's no way to get back to the source
+  posting.
+- The missing delete button (already flagged after turn 2) is more useful
+  once the above two exist, since the list will carry more identifying
+  information worth curating.
