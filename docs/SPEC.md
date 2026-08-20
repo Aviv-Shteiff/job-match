@@ -20,6 +20,9 @@ Where this document is silent, decide in favour of making a real gap more visibl
    holds one optional free-text education entry. A skill with no years recorded is
    not the same as a skill recorded as zero years — the first says nothing about
    duration, the second says there is none — and the two are stored distinctly.
+   Each entry also records which of the profile screen's two groups it belongs to —
+   skills, or roles and experience — defaulting to skills. That grouping is display
+   only: nothing in matching reads it.
 2. Submitting ad text returns a requirement list or a visible error within 30 seconds.
    Text shorter than 200 characters is rejected before any model call, with a message
    asking for the full ad — this is a minimum length guard against empty or accidental
@@ -45,7 +48,9 @@ Where this document is silent, decide in favour of making a real gap more visibl
    has simply not reached that stage yet. An analysis also stores the profile
    snapshot it was matched against — skill names, their years, and the education
    entry — so a stored percentage can be explained by the profile that produced it
-   rather than by the profile as it now stands.
+   rather than by the profile as it now stands. An analysis also stores whatever job
+   title, company name, and posting link were entered when the ad was submitted. All
+   three are optional; an analysis carrying none of them is complete, not partial.
 7. The ad list is ordered by must-have match percentage, highest first.
 8. The detail view lists met requirements and gaps, with must-have gaps before
    nice-to-have gaps.
@@ -70,12 +75,31 @@ Where this document is silent, decide in favour of making a real gap more visibl
     at all — "an equivalent technical degree" — is met by any non-empty education
     entry.
 16. Roles and seniority levels are matched by the same mechanism as any other skill
-    entry. No criterion, stored field, or code path treats them as a distinct kind.
+    entry. Nothing in matching — no criterion, no comparison, no code path that
+    produces a percentage or a gap — treats them as a distinct kind. The profile
+    screen groups them separately for display only, and matching ignores that
+    grouping entirely.
+17. Submitting an ad accepts an optional job title, company name, and posting link,
+    each free text. None is required, and none is validated beyond being text — the
+    link in particular is never fetched or checked for reachability.
+18. The ad list identifies each ad by its entered title and company. An analysis
+    with neither falls back to text derived from the ad, and a derived label is
+    presented so that it reads as derived rather than as something typed. Like C5's
+    boilerplate clause, that last part is checked by eye per §4, not by an automated
+    test. The posting link appears only on the detail view, and only when one was
+    entered.
+19. An analysis can be deleted. Deletion is permanent, takes one confirmation, and
+    works for any analysis regardless of when it was created or which fields it
+    carries. The record of the model call that produced it is not deleted with it —
+    the cost and latency log survives the analysis.
 
 ## 3. Architectural boundaries
 
 - The Express backend holds the OpenRouter API key. It never reaches the browser.
 - All persistence is MongoDB.
+- A stored analysis is never modified after it is created — it can be created or
+  deleted, and nothing else. The title, company, and link are captured at submission
+  and are as fixed afterwards as the model's own output.
 - The profile is one document: skill entries, each a name with optional years, and
   one optional education string. Roles and seniority are skill entries, not a second
   schema.
