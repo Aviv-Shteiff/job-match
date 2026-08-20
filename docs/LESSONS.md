@@ -241,6 +241,10 @@ Surfaced while reviewing the app in real use. None of this is turn 4's scope
 by default — turn 4 was already earmarked for the recalculate button. Recorded
 as candidates to discuss, not a plan.
 
+**Update:** the first three were promoted into turn 4's spec amendment, and the
+recalculate button moved to a later turn. The two entries added at the end of
+this list came out of that amendment and are still unscoped.
+
 - Split the profile screen into two visually distinct sections: "Skills" for
   technologies/tools, and "Roles & experience" for role-level entries like
   "Full Stack" or "Backend". Same underlying data (one skills list),
@@ -255,3 +259,18 @@ as candidates to discuss, not a plan.
 - The missing delete button (already flagged after turn 2) is more useful
   once the above two exist, since the list will carry more identifying
   information worth curating.
+- Part 2 now holds three criteria whose final clause can only be checked by
+  eye rather than by a test: C5's boilerplate exclusion, C13's "the shortfall
+  is shown as the reason", and C18's "a derived label reads as derived". Each
+  is honest about being a §4 manual check, but they have accumulated one turn
+  at a time, and Part 2 is meant to be the testable part of the spec. Worth
+  deciding once whether such clauses belong in Part 4 or Part 5 instead of
+  continuing to add them to Part 2. Deliberately deferred — a documentation
+  reorganization, not a behaviour change.
+- The `modelCalls` collection now grows monotonically relative to `analyses`:
+  C19 deliberately keeps a model-call record when the analysis it produced is
+  deleted, so the cost and latency history survives (CLAUDE.md requires every
+  model call to be logged). This is as designed, not a leak — but it means the
+  two collections will drift apart over time, and `modelCalls` will contain
+  entries pointing at analyses that no longer exist. Nothing reads that
+  collection today. Noted so it isn't a surprise to whoever first does.
