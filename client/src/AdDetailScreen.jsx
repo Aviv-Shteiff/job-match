@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
 import { getAnalysis } from './api.js';
 
-function adTitle(adText) {
+// Matches AdListScreen's adLabel() fallback order (title, then company, then a
+// derived line) so the same ad reads the same way in both places — duplicated
+// rather than shared, consistent with formatPercent below, which is already
+// duplicated between the two files.
+function derivedTitle(adText) {
   const firstLine = adText
     .split('\n')
     .map((line) => line.trim())
     .find((line) => line.length > 0);
   return firstLine || '(untitled ad)';
+}
+
+// C17 accepts the link as plain text with no format validation; this only
+// decides whether it is safe to turn into a clickable anchor, not whether it is
+// "valid" — anything not starting with http(s) renders as plain text instead of
+// becoming an executable URL scheme (e.g. javascript:).
+function isSafeHttpUrl(url) {
+  return /^https?:\/\//i.test(url);
 }
 
 function formatPercent(percent) {
@@ -107,7 +119,30 @@ export default function AdDetailScreen({ analysisId, onBack }) {
       <button type="button" onClick={onBack}>
         ← Back to ads
       </button>
-      <h2 dir="auto">{adTitle(analysis.adText)}</h2>
+      {analysis.title || analysis.company ? (
+        <>
+          <h2 dir="auto">{analysis.title || analysis.company}</h2>
+          {analysis.title && analysis.company && (
+            <p className="detail-company" dir="auto">
+              {analysis.company}
+            </p>
+          )}
+        </>
+      ) : (
+        <h2 className="ad-title-derived" dir="auto">
+          {derivedTitle(analysis.adText)}
+        </h2>
+      )}
+      {analysis.url &&
+        (isSafeHttpUrl(analysis.url) ? (
+          <p className="detail-url">
+            <a href={analysis.url} target="_blank" rel="noopener noreferrer">
+              {analysis.url}
+            </a>
+          </p>
+        ) : (
+          <p className="detail-url">{analysis.url}</p>
+        ))}
       <p className="detail-percents">
         Must-have match: <strong>{formatPercent(analysis.mustHavePercent)}</strong>
         {' · '}
