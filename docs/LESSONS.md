@@ -165,3 +165,55 @@ turn 1's build prompt, not from the document — so this fills a silence rather
 than resolving an ambiguity. Like turn 1 and turn 2's amendments, it will be
 proposed as new FRAMING.md/SPEC.md criteria for approval before turn 3's build
 prompt is written, not decided silently.
+
+## Turn 3 — profile depth (years, education, roles)
+
+All 11 ads stored before this turn were re-analysed against the new extraction
+and the user's real, filled-in profile (Node.js: 5y, MongoDB: 2y, React: 1y,
+SQL: 0y, Express: no years recorded, Full Stack: 4y, Git: no years recorded;
+education: BSc Computer Science). Every resulting percentage, met/gap split,
+and gap reason was checked by hand against that profile.
+
+- The stricter extraction schema (turn-3 Q2: years_required and
+  is_education_requirement required as present keys) never once caused a
+  wrong_shape or bad_label failure across all 11 re-analyses. Every failure —
+  5 of 11 on the first pass, all eventually succeeding on retry — was
+  model_timeout. The schema change didn't make the model worse at following
+  instructions; it made responses longer (more to reason about per
+  requirement), and this model's latency was already the known risk
+  (documented in turn 1's lessons). Worth stating precisely rather than
+  leaving Q2's "more visible failures" prediction unquantified: on this
+  sample, the cost was latency, not malformed output.
+- Role-entry matching (C16) was confirmed working end to end in production,
+  not just in unit tests, in both directions on the same profile entry
+  ("Full Stack", 4 years): the Minute Media ad's "4+ years of experience as a
+  full-stack developer" matched and met (4 ≥ 4); the Hebrew ad's "5 שנות
+  ניסיון בפיתוח Full Stack" matched and correctly produced a shortfall gap
+  (4 < 5, shown as required: 5, recorded: 4). Choosing the shorter profile
+  wording ("Full Stack" rather than "Full Stack Developer") is also what let
+  both ads match at all — confirming the wording-sensitivity pitfall
+  documented in SPEC.md §5 mattered in exactly the way it warned about, and
+  that avoiding it was a real, correct choice rather than a hypothetical one.
+- The Q1 multi-skill overstatement (confirmed once already, in turn 2's
+  testing, on "MongoDB and SQL-Based database") recurred on different real
+  data with a different shape: "Strong proficiency in vanilla JavaScript and
+  React" was marked met because the profile's React entry alone satisfies the
+  substring match — the profile has no JavaScript entry at all, not merely a
+  weaker one. Same mechanism, two independent real confirmations now. Still
+  deferred to a future turn's extraction change per the turn-2 decision, but
+  worth recording that it isn't a one-off.
+- Multi-skill years matching (turn-3 Q3: highest years among matching skills
+  with years recorded) was confirmed correctly ignoring a null: "3+ years of
+  experience with Node.js and Express" matched Node.js (5y) and Express (no
+  years recorded), and was met on Node.js's 5 alone — Express's null did not
+  drag the outcome down or get treated as 0, exactly as designed.
+- C14 (no stated threshold, met by presence alone) was confirmed on a skill
+  with no years recorded: "version control tools such as Git" matched the
+  profile's Git entry (no years recorded) and was met, since the requirement
+  itself stated no threshold to fail.
+- One ad (the Fintech/React role) scored a genuine 0% must-have match: React
+  wanted at 5+ years against a profile recording 1, plus two more skills
+  (TypeScript, state management) entirely absent from the profile. Not a bug
+  — the profile genuinely doesn't fit this ad — but worth naming as a real
+  example of the tool producing a harsh, honest score rather than softening
+  a bad fit, which is the whole point of building it.
