@@ -1,8 +1,11 @@
 // SPEC.md C1: a skill entry is a name plus an optional number of years; the
 // profile also holds one optional free-text education entry. No-years-recorded
-// and years-recorded-as-zero are stored distinctly. FRAMING.md's "profile stays
-// small enough to read at a glance" constraint: strict, all-or-nothing validation
-// at the boundary, not silent coercion of malformed input.
+// and years-recorded-as-zero are stored distinctly. Turn 4: each entry also
+// records which of the profile screen's two groups it belongs to — skills, or
+// roles and experience — defaulting to skills; that grouping is display only.
+// FRAMING.md's "profile stays small enough to read at a glance" constraint:
+// strict, all-or-nothing validation at the boundary, not silent coercion of
+// malformed input.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,16 +13,48 @@ import { validateProfileInput } from '../src/lib/profile.js';
 
 test('accepts a well-formed profile with skills and education', () => {
   const result = validateProfileInput({
-    skills: [{ name: 'Node.js', years: 3 }, { name: 'MongoDB', years: null }],
+    skills: [
+      { name: 'Node.js', years: 3, group: 'skill' },
+      { name: 'MongoDB', years: null, group: 'skill' },
+    ],
     education: 'BSc Computer Science',
   });
 
   assert.equal(result.ok, true);
   assert.deepEqual(result.skills, [
-    { name: 'Node.js', years: 3 },
-    { name: 'MongoDB', years: null },
+    { name: 'Node.js', years: 3, group: 'skill' },
+    { name: 'MongoDB', years: null, group: 'skill' },
   ]);
   assert.equal(result.education, 'BSc Computer Science');
+});
+
+test('an entry with no group defaults to "skill" (C1)', () => {
+  const result = validateProfileInput({
+    skills: [{ name: 'Node.js', years: null }],
+    education: null,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.skills[0].group, 'skill');
+});
+
+test('accepts an entry explicitly grouped as "role"', () => {
+  const result = validateProfileInput({
+    skills: [{ name: 'Full Stack', years: 4, group: 'role' }],
+    education: null,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.skills[0].group, 'role');
+});
+
+test('rejects a group value that is neither "skill" nor "role"', () => {
+  const result = validateProfileInput({
+    skills: [{ name: 'Full Stack', years: 4, group: 'seniority' }],
+    education: null,
+  });
+
+  assert.equal(result.ok, false);
 });
 
 test('trims skill names and drops empty ones', () => {
@@ -29,20 +64,20 @@ test('trims skill names and drops empty ones', () => {
   });
 
   assert.equal(result.ok, true);
-  assert.deepEqual(result.skills, [{ name: 'React', years: null }]);
+  assert.deepEqual(result.skills, [{ name: 'React', years: null, group: 'skill' }]);
 });
 
 test('de-duplicates skill names case-insensitively, keeping the first occurrence', () => {
   const result = validateProfileInput({
     skills: [
-      { name: 'Node.js', years: 5 },
-      { name: 'node.js', years: 1 },
+      { name: 'Node.js', years: 5, group: 'skill' },
+      { name: 'node.js', years: 1, group: 'role' },
     ],
     education: null,
   });
 
   assert.equal(result.ok, true);
-  assert.deepEqual(result.skills, [{ name: 'Node.js', years: 5 }]);
+  assert.deepEqual(result.skills, [{ name: 'Node.js', years: 5, group: 'skill' }]);
 });
 
 test('missing or null years normalizes to null', () => {
@@ -53,8 +88,8 @@ test('missing or null years normalizes to null', () => {
 
   assert.equal(result.ok, true);
   assert.deepEqual(result.skills, [
-    { name: 'React', years: null },
-    { name: 'SQL', years: null },
+    { name: 'React', years: null, group: 'skill' },
+    { name: 'SQL', years: null, group: 'skill' },
   ]);
 });
 
