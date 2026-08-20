@@ -55,8 +55,11 @@ Where this document is silent, decide in favour of making a real gap more visibl
 8. The detail view lists met requirements and gaps, with must-have gaps before
    nice-to-have gaps.
 9. Editing the profile leaves the stored percentages on existing ads unchanged.
-10. "Recalculate" on one ad updates that ad's percentages against the current profile
-    and makes no model call.
+10. "Recalculate" on one ad updates that ad's percentages — and the met, gap, and
+    excluded lists behind them — against the current profile, and makes no model
+    call. Wherever a date is shown beside those percentages, it is the date they
+    were computed, marked as a recalculation when that differs from the analysis
+    date.
 11. A model response that is not valid JSON, or is missing required fields, produces
     a visible failure state, never an empty list rendered as success.
 12. Matching, percentage calculation, and gap ordering are performed in ordinary code
@@ -92,14 +95,20 @@ Where this document is silent, decide in favour of making a real gap more visibl
     works for any analysis regardless of when it was created or which fields it
     carries. The record of the model call that produced it is not deleted with it —
     the cost and latency log survives the analysis.
+20. "Recalculate all" updates every stored analysis the same way C10 updates one, in
+    a single action and with no model call. It is the same operation applied
+    repeatedly, not a different calculation.
 
 ## 3. Architectural boundaries
 
 - The Express backend holds the OpenRouter API key. It never reaches the browser.
 - All persistence is MongoDB.
-- A stored analysis is never modified after it is created — it can be created or
-  deleted, and nothing else. The title, company, and link are captured at submission
-  and are as fixed afterwards as the model's own output.
+- A stored analysis's ad text, requirements, title, company, link, and model-call
+  record are fixed once created — nothing rewrites them. Its match snapshot is the
+  single exception: "recalculate" replaces it against the current profile, on the
+  user's explicit instruction and never on its own. C9 forecloses the implicit path
+  — editing the profile changes nothing by itself; C10 provides the explicit one.
+  Beyond that exception, an analysis is created or deleted, and nothing else.
 - The profile is one document: skill entries, each a name with optional years and a
   display group, and one optional education string. Roles and seniority are skill
   entries, not a second schema.

@@ -33,7 +33,10 @@ Each line is true or false when someone else runs the app.
    requirement whose quote is not found in the source is never shown as a requirement.
 4. Each analysed ad is saved and appears in a list ranked by match percentage.
 5. The list shows, for each ad, the match percentage for must-have requirements, the
-   match percentage for nice-to-have requirements, and the date it was analysed.
+   match percentage for nice-to-have requirements, and the date those percentages
+   were computed — the date it was analysed, or the date of the most recent
+   recalculation when the two differ, marked so the difference is visible. A date
+   shown beside a percentage always explains that percentage.
 6. Opening an ad shows which requirements are met and which are gaps, with must-have
    gaps listed before nice-to-have gaps.
 7. Editing the profile does not change the percentages already stored on existing ads.
