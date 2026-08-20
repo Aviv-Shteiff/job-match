@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getProfile, saveProfile } from './api.js';
+import Toast from './Toast.jsx';
 
 // Years is kept as a string in local state (matching the text input's natural
 // value) and only parsed to a number or null at save time — see parseYears.
@@ -33,8 +34,9 @@ export default function ProfileScreen() {
   const [skills, setSkills] = useState([]);
   const [education, setEducation] = useState('');
   const [loadState, setLoadState] = useState('loading'); // loading | loaded | error
-  const [saveState, setSaveState] = useState('idle'); // idle | saving | saved | error
+  const [saveState, setSaveState] = useState('idle'); // idle | saving | error
   const [saveMessage, setSaveMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,8 +100,8 @@ export default function ProfileScreen() {
     if (result.ok) {
       setSkills(result.profile.skills.map(skillFromServer));
       setEducation(result.profile.education ?? '');
-      setSaveState('saved');
-      setSaveMessage('Profile saved.');
+      setSaveState('idle');
+      setToastMessage('Profile saved.');
     } else {
       setSaveState('error');
       setSaveMessage(result.message || 'Could not save the profile.');
@@ -207,9 +209,9 @@ export default function ProfileScreen() {
         <button type="button" onClick={handleSave} disabled={saveState === 'saving'}>
           {saveState === 'saving' ? 'Saving…' : 'Save'}
         </button>
-        {saveState === 'saved' && <span className="save-status success">{saveMessage}</span>}
         {saveState === 'error' && <span className="save-status failure">{saveMessage}</span>}
       </div>
+      {toastMessage && <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />}
     </section>
   );
 }

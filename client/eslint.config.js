@@ -19,6 +19,8 @@ export default [
         window: 'readonly',
         fetch: 'readonly',
         console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
       },
     },
     plugins: {
