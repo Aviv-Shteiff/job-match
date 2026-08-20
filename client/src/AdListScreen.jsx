@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAnalyses, deleteAnalysis } from './api.js';
+import { getAnalyses, deleteAnalysis, recalculateAllAnalyses } from './api.js';
 import Modal from './Modal.jsx';
 
 // Fallback when neither title nor company was entered (C18). Derived at render
@@ -35,16 +35,34 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString();
 }
 
+// C10/FRAMING #5: a date shown beside a percentage must explain that percentage.
+// match.matchedAt is set at analysis time too (buildMatchSnapshot runs
+// synchronously, milliseconds before analyzedAt in analyse.js), so a tolerance
+// distinguishes "computed as part of analysing" from a genuine later recalculate,
+// rather than flagging every ad as "recalculated" the moment it's created.
+const RECALCULATION_THRESHOLD_MS = 5000;
+
+function matchDateInfo(analysis) {
+  const matchedAt = analysis.match?.matchedAt;
+  if (!matchedAt) return { date: analysis.analyzedAt, recalculated: false };
+
+  const gapMs = new Date(matchedAt).getTime() - new Date(analysis.analyzedAt).getTime();
+  if (gapMs < RECALCULATION_THRESHOLD_MS) return { date: analysis.analyzedAt, recalculated: false };
+  return { date: matchedAt, recalculated: true };
+}
+
 export default function AdListScreen({ onSelect }) {
   const [state, setState] = useState('loading'); // loading | loaded | error
   const [analyses, setAnalyses] = useState([]);
   const [deleteError, setDeleteError] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null); // { id, label } | null
+  const [pendingRecalculateAll, setPendingRecalculateAll] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
+  const [recalculateError, setRecalculateError] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    getAnalyses().then((result) => {
-      if (cancelled) return;
+  function loadAnalyses(guard = { cancelled: false }) {
+    return getAnalyses().then((result) => {
+      if (guard.cancelled) return;
       if (result.ok) {
         setAnalyses(result.analyses);
         setState('loaded');
@@ -52,8 +70,13 @@ export default function AdListScreen({ onSelect }) {
         setState('error');
       }
     });
+  }
+
+  useEffect(() => {
+    const guard = { cancelled: false };
+    loadAnalyses(guard);
     return () => {
-      cancelled = true;
+      guard.cancelled = true;
     };
   }, []);
 
@@ -73,6 +96,22 @@ export default function AdListScreen({ onSelect }) {
     }
   }
 
+  // C20/turn-5 Q3: overwrites every stored match snapshot in one action, so it
+  // takes the same one-confirmation modal as delete, reused with different text.
+  async function confirmRecalculateAll() {
+    setPendingRecalculateAll(false);
+    setRecalculating(true);
+    setRecalculateError(null);
+    const result = await recalculateAllAnalyses();
+    setRecalculating(false);
+    if (result.ok) {
+      // G5: refetch so the list re-sorts under the new percentages (C7).
+      await loadAnalyses();
+    } else {
+      setRecalculateError(result.message || 'Could not recalculate.');
+    }
+  }
+
   if (state === 'loading') {
     return <p>Loading ads…</p>;
   }
@@ -87,15 +126,26 @@ export default function AdListScreen({ onSelect }) {
 
   return (
     <section>
-      <h2>Analysed ads</h2>
+      <div className="list-header">
+        <h2>Analysed ads</h2>
+        <button type="button" onClick={() => setPendingRecalculateAll(true)} disabled={recalculating}>
+          {recalculating ? 'Recalculating…' : 'Recalculate all'}
+        </button>
+      </div>
       {deleteError && (
         <p className="failure" role="alert">
           Could not delete: {deleteError}
         </p>
       )}
+      {recalculateError && (
+        <p className="failure" role="alert">
+          Could not recalculate: {recalculateError}
+        </p>
+      )}
       <ul className="ad-list">
         {analyses.map((analysis) => {
           const label = adLabel(analysis);
+          const dateInfo = matchDateInfo(analysis);
           return (
             <li key={analysis._id}>
               <div className="ad-row">
@@ -108,7 +158,10 @@ export default function AdListScreen({ onSelect }) {
                     <span className="ad-percent">Must-have: {formatPercent(analysis.mustHavePercent)}</span>
                     <span className="ad-percent">Nice-to-have: {formatPercent(analysis.niceToHavePercent)}</span>
                   </span>
-                  <span className="ad-date">{formatDate(analysis.analyzedAt)}</span>
+                  <span className="ad-date">
+                    {dateInfo.recalculated && <span className="ad-recalculated-tag">Recalculated </span>}
+                    {formatDate(dateInfo.date)}
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -132,6 +185,16 @@ export default function AdListScreen({ onSelect }) {
           danger
           onConfirm={confirmDelete}
           onCancel={() => setPendingDelete(null)}
+        />
+      )}
+      {pendingRecalculateAll && (
+        <Modal
+          title="Recalculate all ads?"
+          message={`This replaces the stored match result on all ${analyses.length} ads against your current profile. No model call is made, and this cannot be undone.`}
+          confirmLabel="Recalculate all"
+          cancelLabel="Cancel"
+          onConfirm={confirmRecalculateAll}
+          onCancel={() => setPendingRecalculateAll(false)}
         />
       )}
     </section>

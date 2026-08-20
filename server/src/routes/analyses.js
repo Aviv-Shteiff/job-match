@@ -34,6 +34,7 @@ analysesRouter.get('/', async (req, res) => {
           mustHavePercent: 1,
           niceToHavePercent: 1,
           analyzedAt: 1,
+          'match.matchedAt': 1,
         },
       },
     )

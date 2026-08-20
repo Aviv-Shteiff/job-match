@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAnalysis } from './api.js';
+import { getAnalysis, recalculateAnalysis } from './api.js';
 
 // Matches AdListScreen's adLabel() fallback order (title, then company, then a
 // derived line) so the same ad reads the same way in both places — duplicated
@@ -23,6 +23,24 @@ function isSafeHttpUrl(url) {
 
 function formatPercent(percent) {
   return percent === null || percent === undefined ? 'not yet calculated' : `${percent}%`;
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString();
+}
+
+// C10/FRAMING #5: duplicated from AdListScreen's matchDateInfo (see that file's
+// comment for why a tolerance is needed) rather than shared, consistent with the
+// rest of this file's small-duplication convention.
+const RECALCULATION_THRESHOLD_MS = 5000;
+
+function matchDateInfo(analysis) {
+  const matchedAt = analysis.match?.matchedAt;
+  if (!matchedAt) return { date: analysis.analyzedAt, recalculated: false };
+
+  const gapMs = new Date(matchedAt).getTime() - new Date(analysis.analyzedAt).getTime();
+  if (gapMs < RECALCULATION_THRESHOLD_MS) return { date: analysis.analyzedAt, recalculated: false };
+  return { date: matchedAt, recalculated: true };
 }
 
 // C13: "the shortfall is shown as the reason for the gap rather than left to be
@@ -65,6 +83,23 @@ function RequirementRow({ requirement, showReason = false }) {
 export default function AdDetailScreen({ analysisId, onBack }) {
   const [state, setState] = useState('loading'); // loading | loaded | error
   const [analysis, setAnalysis] = useState(null);
+  const [recalculating, setRecalculating] = useState(false);
+  const [recalculateError, setRecalculateError] = useState(null);
+
+  // C10: no confirmation here — unlike recalculate-all, this touches one
+  // analysis, is cheap to reason about, and running it again reproduces the
+  // same result, so a modal would be friction without a real risk to guard.
+  async function handleRecalculate() {
+    setRecalculating(true);
+    setRecalculateError(null);
+    const result = await recalculateAnalysis(analysisId);
+    setRecalculating(false);
+    if (result.ok) {
+      setAnalysis(result.analysis);
+    } else {
+      setRecalculateError(result.message || 'Could not recalculate.');
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -148,6 +183,20 @@ export default function AdDetailScreen({ analysisId, onBack }) {
         {' · '}
         Nice-to-have match: <strong>{formatPercent(analysis.niceToHavePercent)}</strong>
       </p>
+      <p className="detail-match-date">
+        {matchDateInfo(analysis).recalculated
+          ? `Recalculated ${formatDate(matchDateInfo(analysis).date)}`
+          : `Analysed ${formatDate(matchDateInfo(analysis).date)}`}
+        {' · '}
+        <button type="button" onClick={handleRecalculate} disabled={recalculating}>
+          {recalculating ? 'Recalculating…' : 'Recalculate'}
+        </button>
+      </p>
+      {recalculateError && (
+        <p className="failure" role="alert">
+          Could not recalculate: {recalculateError}
+        </p>
+      )}
 
       <h3>Requirements met</h3>
       {match.met.length === 0 && <p className="empty-note">None yet.</p>}

@@ -245,6 +245,23 @@ textarea {
   flex-shrink: 0;
 }
 
+.ad-recalculated-tag {
+  color: #1a7f37;
+  font-weight: 600;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.list-header h2 {
+  margin: 0;
+}
+
 .detail-company {
   margin: -0.5rem 0 0.5rem;
   color: #555;
@@ -261,6 +278,20 @@ textarea {
   font-size: 1rem;
   color: #333;
   margin: 0.5rem 0 1.5rem;
+}
+
+.detail-match-date {
+  font-size: 0.85rem;
+  color: #666;
+  margin: -1rem 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-match-date button {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
 }
 
 .empty-note {

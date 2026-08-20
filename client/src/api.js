@@ -33,3 +33,11 @@ export function getAnalysis(id) {
 export function deleteAnalysis(id) {
   return apiFetch(`/api/analyses/${id}`, { method: 'DELETE' });
 }
+
+export function recalculateAnalysis(id) {
+  return apiFetch(`/api/analyses/${id}/recalculate`, { method: 'POST' });
+}
+
+export function recalculateAllAnalyses() {
+  return apiFetch('/api/analyses/recalculate-all', { method: 'POST' });
+}
