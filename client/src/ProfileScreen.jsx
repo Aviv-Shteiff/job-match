@@ -4,7 +4,11 @@ import { getProfile, saveProfile } from './api.js';
 // Years is kept as a string in local state (matching the text input's natural
 // value) and only parsed to a number or null at save time — see parseYears.
 function skillFromServer(skill) {
-  return { name: skill.name, years: skill.years === null ? '' : String(skill.years) };
+  return {
+    name: skill.name,
+    years: skill.years === null ? '' : String(skill.years),
+    group: skill.group,
+  };
 }
 
 // Validated client-side before the request is sent, not left to the server:
@@ -15,6 +19,14 @@ function parseYears(raw) {
   if (trimmed === '') return { ok: true, years: null };
   if (!/^\d+$/.test(trimmed)) return { ok: false };
   return { ok: true, years: Number(trimmed) };
+}
+
+// The profile is one flat list (server shape); the two sections are a view
+// over it. Keeping {skill, index} pairs — rather than a filtered copy — means
+// every row's update/remove/move handler still addresses the entry by its real
+// position in the underlying array (C1: the grouping is display only).
+function sectionEntries(skills, group) {
+  return skills.map((skill, index) => ({ skill, index })).filter(({ skill }) => skill.group === group);
 }
 
 export default function ProfileScreen() {
@@ -41,20 +53,26 @@ export default function ProfileScreen() {
     };
   }, []);
 
-  function updateSkillName(index, value) {
+  function updateName(index, value) {
     setSkills((prev) => prev.map((s, i) => (i === index ? { ...s, name: value } : s)));
   }
 
-  function updateSkillYears(index, value) {
+  function updateYears(index, value) {
     setSkills((prev) => prev.map((s, i) => (i === index ? { ...s, years: value } : s)));
   }
 
-  function removeSkill(index) {
+  function toggleGroup(index) {
+    setSkills((prev) =>
+      prev.map((s, i) => (i === index ? { ...s, group: s.group === 'skill' ? 'role' : 'skill' } : s)),
+    );
+  }
+
+  function removeEntry(index) {
     setSkills((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function addSkill() {
-    setSkills((prev) => [...prev, { name: '', years: '' }]);
+  function addEntry(group) {
+    setSkills((prev) => [...prev, { name: '', years: '', group }]);
   }
 
   async function handleSave() {
@@ -64,11 +82,11 @@ export default function ProfileScreen() {
       if (!yearsResult.ok) {
         setSaveState('error');
         setSaveMessage(
-          `"${skill.name || '(unnamed skill)'}" has an invalid years value — enter a whole number, or leave it blank.`,
+          `"${skill.name || '(unnamed entry)'}" has an invalid years value — enter a whole number, or leave it blank.`,
         );
         return;
       }
-      parsedSkills.push({ name: skill.name, years: yearsResult.years });
+      parsedSkills.push({ name: skill.name, years: yearsResult.years, group: skill.group });
     }
 
     setSaveState('saving');
@@ -96,11 +114,16 @@ export default function ProfileScreen() {
     return <p className="failure">Could not load your profile. Try reloading the page.</p>;
   }
 
+  const skillEntries = sectionEntries(skills, 'skill');
+  const roleEntries = sectionEntries(skills, 'role');
+
   return (
     <section>
       <h2>Skills profile</h2>
+
+      <h3>Skills</h3>
       <ul className="skill-list">
-        {skills.map((skill, index) => (
+        {skillEntries.map(({ skill, index }) => (
           // Index is a stable-enough key here: this is a flat, non-reorderable list
           // edited by the same user in one sitting, not a synced or animated list.
           <li key={index}>
@@ -108,7 +131,7 @@ export default function ProfileScreen() {
               type="text"
               className="skill-name"
               value={skill.name}
-              onChange={(e) => updateSkillName(index, e.target.value)}
+              onChange={(e) => updateName(index, e.target.value)}
               placeholder="Skill name"
               dir="auto"
             />
@@ -117,18 +140,55 @@ export default function ProfileScreen() {
               inputMode="numeric"
               className="skill-years"
               value={skill.years}
-              onChange={(e) => updateSkillYears(index, e.target.value)}
+              onChange={(e) => updateYears(index, e.target.value)}
               placeholder="years"
               aria-label={`Years of experience with ${skill.name || 'this skill'}`}
             />
-            <button type="button" onClick={() => removeSkill(index)} aria-label="Remove skill">
+            <button type="button" className="move-button" onClick={() => toggleGroup(index)}>
+              → Role
+            </button>
+            <button type="button" onClick={() => removeEntry(index)} aria-label="Remove entry">
               ✕
             </button>
           </li>
         ))}
       </ul>
-      <button type="button" onClick={addSkill}>
+      <button type="button" onClick={() => addEntry('skill')}>
         + Add skill
+      </button>
+
+      <h3>Roles &amp; Experience</h3>
+      <ul className="skill-list">
+        {roleEntries.map(({ skill, index }) => (
+          <li key={index}>
+            <input
+              type="text"
+              className="skill-name"
+              value={skill.name}
+              onChange={(e) => updateName(index, e.target.value)}
+              placeholder="Role, e.g. Backend Developer"
+              dir="auto"
+            />
+            <input
+              type="text"
+              inputMode="numeric"
+              className="skill-years"
+              value={skill.years}
+              onChange={(e) => updateYears(index, e.target.value)}
+              placeholder="years"
+              aria-label={`Years of experience as ${skill.name || 'this role'}`}
+            />
+            <button type="button" className="move-button" onClick={() => toggleGroup(index)}>
+              → Skill
+            </button>
+            <button type="button" onClick={() => removeEntry(index)} aria-label="Remove entry">
+              ✕
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button type="button" onClick={() => addEntry('role')}>
+        + Add role
       </button>
 
       <div className="education-row">

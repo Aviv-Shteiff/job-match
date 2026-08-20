@@ -53,6 +53,12 @@ body {
   text-align: right;
 }
 
+.move-button {
+  font-size: 0.8rem;
+  color: #555;
+  white-space: nowrap;
+}
+
 .education-row {
   margin-top: 1rem;
   display: flex;
