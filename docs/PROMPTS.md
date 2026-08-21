@@ -211,3 +211,73 @@ A separate build-plan exchange followed, with three more decisions:
   verification, no dependency** — follows the precedent that every route in this
   codebase is curl-verified while only pure functions are unit-tested; accepted
   cost is that the one destructive endpoint has no automated regression test.
+
+## Turn 5 — recalculate, and three UX fixes
+
+Requested: `recalculate` (C10, specified since v0.1 but never built) — a per-ad
+control that re-runs matching for one stored analysis against the current
+profile with no model call, since the requirements are already stored — plus a
+"recalculate all" control on the ad list applying the same operation to every
+stored analysis at once, updating each match snapshot in place. Framed
+explicitly as the one deliberate exception to "a stored analysis is never
+modified" (C9), stated plainly rather than routed around, since C9 exists to
+protect analyses from silently changing when the profile changes and
+recalculate is the explicit, user-initiated escape hatch for that. Alongside
+recalculate, three UX fixes named in `docs/LESSONS.md`'s "UX findings from real
+use" section: an in-app modal replacing the native `window.confirm()` on
+delete, a visible loading indicator during ad analysis, and a toast replacing
+the plain-text "profile saved" confirmation. The agent was asked to state
+plainly whether C9 needed an explicit amendment for the recalculate exception,
+or whether its existing wording already permitted this without a spec change.
+
+The plan found that C9 was not the problem — Part 3 was. A line added in turn
+4 ("a stored analysis is never modified after it is created — it can be
+created or deleted, and nothing else") had been written to justify
+paste-time-only ad metadata, and it forbade C10 outright, a criterion that
+predates that line by four turns. Four spec amendments were proposed and
+approved in the same exchange as the build plan, before any code was written:
+
+- **Part 3's conflict with C10** — fixed by naming the match snapshot as the
+  single explicit exception to "never modified," and stating the relationship
+  between C9 and C10 directly: C9 forecloses the implicit path (editing the
+  profile changes nothing by itself), C10 provides the explicit one.
+- **New C20**, since neither C10 ("on one ad") nor FRAMING #8 ("a single ad")
+  covered bulk recalculation, and FRAMING's out-of-scope line only rules out
+  *automatic* recalculation when the profile changes — user-initiated bulk was
+  neither covered nor forbidden.
+- **C10 extended** to name the met, gap, and excluded lists explicitly, not
+  just "percentages" — updating only the two numbers while leaving the lists
+  stale would reproduce the two-screens-disagree failure turn 2's G2 was
+  written to prevent.
+- **FRAMING #5 reworded** so the list's date column shows whichever date
+  actually explains the displayed percentages — the date analysed, or the date
+  of the most recent recalculation when the two differ, marked as such —
+  rather than unconditionally "the date it was analysed."
+
+Four more decisions were resolved as part of the same build plan:
+
+- **10 of the 27 stored analyses predated turn 3's years/education extraction
+  fields** — recalculating them would work, but every requirement would read
+  as "no threshold stated" under different semantics than a post-turn-3
+  analysis, indistinguishable on screen. Delete them, mark them, or recalculate
+  them like any other and accept the risk? → **Deleted all pre-turn-3
+  analyses** — this removed the case from the current data entirely rather
+  than special-casing code for it; the posture for if it recurs (refuse rather
+  than silently compute under different semantics) was recorded but
+  deliberately not built, since there was nothing left to guard against.
+- **Where the per-ad recalculate control lives** — the detail view, the list
+  row next to delete, or both? → **Detail view only** — the met/gap lists it
+  changes are actually visible there, and the list row already carries a
+  title, two percentages, a date, and delete.
+- **Whether "recalculate all" needs a confirmation**, given it overwrites
+  every stored match snapshot at once with no undo, though nothing is
+  destroyed the way delete destroys data → **One confirmation, reusing the
+  same modal built for delete** — overwriting every stored snapshot in one
+  click is worth a deliberate beat, and the modal already exists by the time
+  this needs it.
+- **Whether and where to show the match date**, since after a recalculate the
+  existing "date analysed" no longer explains the percentages beside it →
+  **Shown in both the list and the detail view**, marked when it differs from
+  the analysis date — the ranked list is the screen the tool exists to
+  produce, so it shouldn't show a number next to a date that doesn't account
+  for it. This is what drove the FRAMING #5 amendment above.

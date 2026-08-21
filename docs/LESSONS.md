@@ -390,3 +390,32 @@ this list came out of that amendment and are still unscoped.
 - modelCalls has grown to 44 entries against 17 analyses (turn 4's
   LESSONS.md entry predicted this drift; now directly observed). Still
   nothing reads that collection.
+- All five pieces of this turn confirmed live, by the user, on top of the
+  above:
+  - Toast notification on profile save: confirmed working, styled
+    consistently, auto-dismisses.
+  - Loading overlay during ad analysis: confirmed functional (spinner,
+    dimmed background, "up to 30 seconds" message) — but the overlay
+    text visually overlaps the title/company/link fields below it, with
+    no background container separating it from the page content.
+    Functional, not polished — noted for the design turn.
+  - Per-ad recalculate: confirmed end to end on a real ad. Raised
+    MongoDB from 2 to 3 years in the profile, recalculated a stored
+    analysis whose "3+ years of experience with MongoDB" requirement
+    was a gap — it correctly moved to met, the percentage updated (75%
+    to 100%), and the label changed from "Analysed" to "Recalculated"
+    with the new date.
+  - Delete confirmation modal: confirmed — an in-app styled dialog
+    naming the specific ad, replacing the native browser confirm().
+  - Recalculate-all: confirmed on all 17 stored analyses at once. The
+    confirmation modal correctly stated the exact count and that no
+    model call is made. One analysis's must-have percentage changed
+    live (60% to 80%) reflecting an unrelated profile edit (Express
+    years added) made earlier — confirming recalculate-all responds to
+    real profile state, not just re-stamping dates.
+  - Noted and understood, not a bug: once any analysis is recalculated,
+    its list label permanently reads "Recalculated" instead of
+    "Analysed," even after a later recalculation. Intended per Q4/
+    FRAMING #5 — the label states which kind of event the displayed
+    date and percentages come from, and that fact doesn't reverse
+    itself.
