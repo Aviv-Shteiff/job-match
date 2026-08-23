@@ -410,96 +410,102 @@ textarea {
 }
 
 .ad-list li {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 .ad-row {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .ad-row-main {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.6rem 0.9rem;
-  background: #f7f7f7;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   text-align: left;
   min-width: 0;
 }
 
-.ad-row-main:hover {
-  background: #eee;
+.ad-row-main:hover:not(:disabled) {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .delete-button {
   flex-shrink: 0;
-  font-size: 0.85rem;
-  color: #b91c1c;
-  border: 1px solid #f3c2c2;
-  background: #fff;
-  padding: 0.5rem 0.7rem;
-  border-radius: 4px;
-  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+  background: var(--color-bg);
 }
 
-.delete-button:hover {
-  background: #fef2f2;
+.delete-button:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
 }
 
 .ad-title {
   flex: 1;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
 }
 
+/* Carries real meaning (turn 4 C18): a derived label must read as derived, not
+   as something typed. Kept exactly — italic, muted, lighter weight. */
 .ad-title-derived {
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
   font-style: italic;
-  color: #666;
+  color: var(--color-text-tertiary);
 }
 
 .ad-company {
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
   font-style: normal;
-  color: #555;
+  color: var(--color-text-secondary);
 }
 
 .ad-percents {
   display: flex;
   flex-direction: column;
-  font-size: 0.85rem;
-  color: #444;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   flex-shrink: 0;
 }
 
 .ad-date {
-  font-size: 0.85rem;
-  color: #777;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
   flex-shrink: 0;
 }
 
+/* Neutral, not green (turn 6 forced consequence of Q4): green now means
+   "met," so a tag about which date you're looking at can't share that colour
+   without implying a positive match result. */
 .ad-recalculated-tag {
-  color: #1a7f37;
-  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
 }
 
 .list-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .list-header h2 {
