@@ -579,7 +579,7 @@ textarea {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -636,12 +636,12 @@ textarea {
 }
 
 .modal {
-  background: #fff;
-  border-radius: 6px;
-  padding: 1.5rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   max-width: 24rem;
   width: 90%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal h3 {
@@ -651,39 +651,49 @@ textarea {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
 }
 
+/* The non-danger confirm (e.g. "Recalculate all") is a primary action, so it
+   gets the same accent colour as the other primary buttons (turn 6 Q2). The
+   danger variant (delete) stays red — the one exception to "one accent
+   colour," since it warns rather than invites. */
 .modal-confirm {
-  background: #333;
-  color: #fff;
-  border: 1px solid #333;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border: 1px solid var(--color-accent);
 }
 
-.modal-confirm:hover {
-  background: #111;
+.modal-confirm:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .modal-confirm.danger {
-  background: #b91c1c;
-  border-color: #b91c1c;
+  background: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
-.modal-confirm.danger:hover {
-  background: #991b1b;
+.modal-confirm.danger:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
 }
 
+/* Neutral dark rather than green (turn 6 design decision): green is reserved
+   for "met" on the detail view, and keeping that the app's only green keeps
+   the rule simple to state and to trust, even though a toast and a
+   requirement list never appear on screen together. */
 .toast {
   position: fixed;
-  bottom: 1.5rem;
+  bottom: var(--space-6);
   left: 50%;
   transform: translateX(-50%);
-  background: #1a7f37;
-  color: #fff;
-  padding: 0.75rem 1.25rem;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: var(--color-text);
+  color: var(--color-bg);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   cursor: pointer;
   z-index: 100;
 }
