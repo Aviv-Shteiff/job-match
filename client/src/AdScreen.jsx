@@ -87,8 +87,10 @@ export default function AdScreen() {
 
       {status === 'submitting' && (
         <div className="loading-overlay">
-          <div className="spinner" aria-hidden="true" />
-          <p>Analysing your ad — this can take up to 30 seconds…</p>
+          <div className="loading-card">
+            <div className="spinner" aria-hidden="true" />
+            <p>Analysing your ad — this can take up to 30 seconds…</p>
+          </div>
         </div>
       )}
 

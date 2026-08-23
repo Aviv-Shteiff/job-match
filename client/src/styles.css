@@ -353,49 +353,55 @@ textarea {
 
 .ad-metadata-row {
   display: flex;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
 }
 
 .ad-metadata-row input {
   flex: 1;
-  padding: 0.4rem;
-  font-size: 0.95rem;
-  box-sizing: border-box;
+  font-size: var(--font-size-sm);
 }
 
 .results {
-  margin-top: 1.5rem;
-  border-top: 1px solid #ccc;
-  padding-top: 1rem;
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
 }
 
+/* Base/neutral treatment. Deliberately NOT colour-coded here: this same class
+   renders the Analyse screen's freshly extracted requirements, where nothing
+   has been matched against a profile yet — colouring it would visually claim
+   a match that was never computed (turn 6 Q4). .gap-list and .excluded-list
+   below override the colour where a real gap/exclusion exists; .met-list
+   (detail view only) is the only place this becomes green. */
 .requirement-list {
   list-style: none;
   padding: 0;
 }
 
 .requirement-list li {
-  margin-bottom: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-left: 3px solid #333;
-  background: #f7f7f7;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-border-strong);
+  background: var(--color-surface);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .requirement-text {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
 }
 
 .requirement-quote {
-  font-size: 0.85rem;
-  color: #555;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
   font-style: italic;
-  margin-top: 0.2rem;
+  margin-top: var(--space-1);
 }
 
 .rejected-note {
-  color: #7a5c00;
-  font-size: 0.9rem;
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
 }
 
 .ad-list {
@@ -564,28 +570,45 @@ textarea {
   z-index: 100;
 }
 
+/* Fixed in turn 6: the overlay previously had no container of its own, so its
+   text visually overlapped the ad-metadata fields underneath (LESSONS.md,
+   turn 5). The backdrop now genuinely dims the page (matching .modal-backdrop's
+   treatment) and the spinner/text sit inside an opaque .loading-card, the same
+   way a modal's content sits inside .modal. */
 .loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(15, 23, 42, 0.4);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
   z-index: 100;
 }
 
-.loading-overlay p {
-  color: #333;
-  font-size: 1rem;
+.loading-card {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: 20rem;
+  text-align: center;
+}
+
+.loading-card p {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  margin: 0;
 }
 
 .spinner {
   width: 2.5rem;
   height: 2.5rem;
-  border: 4px solid #ddd;
-  border-top-color: #333;
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
