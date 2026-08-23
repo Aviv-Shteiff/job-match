@@ -518,6 +518,14 @@ textarea {
   margin: 0;
 }
 
+/* The "Back to ads" button has no className (it's the first child of
+   AdDetailScreen's <section> in all three of its states — loading, error,
+   loaded), so it's targeted structurally rather than by adding one. Gives it
+   room before the title below, matching the page's other spacing. */
+section > button:first-child {
+  margin-bottom: var(--space-5);
+}
+
 .detail-company {
   margin: calc(-1 * var(--space-3)) 0 var(--space-2);
   color: var(--color-text-secondary);
