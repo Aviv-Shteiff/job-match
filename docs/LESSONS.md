@@ -419,3 +419,43 @@ this list came out of that amendment and are still unscoped.
     FRAMING #5 — the label states which kind of event the displayed
     date and percentages come from, and that fact doesn't reverse
     itself.
+
+## Turn 6 — visual design pass
+
+- The two JSX changes planned up front (a wrapper div for the
+  loading-overlay card; a met-list class on the detail view's two met
+  sections) were both verified by more than reading the diff: the JS
+  bundle grew by exactly 50 bytes for the first and exactly 10 bytes
+  for the second, matching what each change should cost almost to the
+  byte, and `git diff` showed nothing else in either file. Every other
+  step's bundle size was byte-for-byte identical to the step before it
+  — the strongest evidence available, short of a browser, that seven of
+  the nine steps touched no behaviour at all.
+- Choosing green for "met" (Q4) turned out to have a real, unplanned
+  consequence: `.ad-recalculated-tag` had been coloured green since
+  turn 5 with no real deliberation behind it, and once green became
+  load-bearing for match outcomes, that tag had to move to neutral grey
+  — a date label sharing "met"'s colour would have silently implied a
+  positive result. Caught while executing the list-screen step, not
+  anticipated in the plan.
+- The toast notification (profile saved) was also moved off green,
+  though nothing required it — a toast and a requirement list never
+  appear on screen together. Kept as a deliberate simplification: one
+  colour, one meaning, everywhere in the app, rather than "green means
+  met, except when it means success."
+- `.ad-percent` (singular) had been used in AdListScreen's JSX since
+  turn 2 with no CSS rule ever written for it — flagged as a probable
+  leftover in the plan, confirmed and given a small rule during this
+  step's verification pass rather than left unaddressed.
+- Verified the RTL and accessibility surface is exactly unchanged, not
+  just probably unchanged: 14 dir="auto" attributes, 6 aria-label, 1
+  aria-hidden, 1 aria-modal, 4 role="alert", 1 role="dialog", 1
+  role="status" — identical counts before and after all nine steps.
+- Could not verify any of this visually — no browser tool was available
+  this session either. A client dev server was already running with an
+  active browser connection when this step checked, which may mean it
+  was open and hot-reloading throughout the session, but that was not
+  confirmed directly. Rendering, spacing, and colour contrast in an
+  actual browser remain unconfirmed by the agent; recommend opening the
+  app and clicking through all three screens before treating this turn
+  as done.

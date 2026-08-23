@@ -486,6 +486,12 @@ textarea {
   flex-shrink: 0;
 }
 
+/* Was used in JSX with no rule behind it since turn 2 (found during this
+   turn's verification pass) — a small addition, not a behaviour change. */
+.ad-percent {
+  white-space: nowrap;
+}
+
 .ad-date {
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
