@@ -245,18 +245,26 @@ textarea:focus {
 .skill-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .skill-list li {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .skill-list input {
-  padding: 0.4rem;
-  font-size: 1rem;
+  padding: var(--space-2);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg);
 }
 
 .skill-list .skill-name {
@@ -269,51 +277,72 @@ textarea:focus {
 }
 
 .move-button {
-  font-size: 0.8rem;
-  color: #555;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
   white-space: nowrap;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.skill-list button[aria-label='Remove entry'] {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-text-tertiary);
+  border-color: transparent;
+  background: none;
+}
+
+.skill-list button[aria-label='Remove entry']:hover:not(:disabled) {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
 }
 
 .education-row {
-  margin-top: 1rem;
+  margin-top: var(--space-5);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 
 .education-row label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
 .education-row input {
   flex: 1;
-  padding: 0.4rem;
-  font-size: 1rem;
 }
 
 .save-row {
-  margin-top: 1rem;
+  margin-top: var(--space-5);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .save-status.failure {
-  color: #b91c1c;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
 }
 
+/* Shared across every screen (submit failures, load failures, delete/
+   recalculate errors) — refined here as it's not specific to any one
+   screen's step. */
 .failure {
-  color: #b91c1c;
-  border: 1px solid #b91c1c;
-  background: #fef2f2;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-4);
 }
 
 .failure-detail {
-  margin-top: 0.35rem;
-  font-size: 0.9rem;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
 }
 
 /* The rest of the textarea's treatment (font, padding, border, focus) comes
