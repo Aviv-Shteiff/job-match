@@ -203,7 +203,7 @@ export default function AdDetailScreen({ analysisId, onBack }) {
       {metMustHave.length > 0 && (
         <>
           <h4>Must have</h4>
-          <ul className="requirement-list">
+          <ul className="requirement-list met-list">
             {metMustHave.map((r, i) => (
               <RequirementRow key={i} requirement={r} />
             ))}
@@ -213,7 +213,7 @@ export default function AdDetailScreen({ analysisId, onBack }) {
       {metNiceToHave.length > 0 && (
         <>
           <h4>Nice to have</h4>
-          <ul className="requirement-list">
+          <ul className="requirement-list met-list">
             {metNiceToHave.map((r, i) => (
               <RequirementRow key={i} requirement={r} />
             ))}
