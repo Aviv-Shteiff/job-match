@@ -362,6 +362,14 @@ textarea {
   font-size: var(--font-size-sm);
 }
 
+/* Matches .save-row's margin-top, so the Analyse button gets the same
+   breathing room above it as the profile Save button. The wrapper div has no
+   className, so it's targeted structurally (form is unique to this screen,
+   and this div is its only last child). */
+form > div:last-child {
+  margin-top: var(--space-5);
+}
+
 .results {
   margin-top: var(--space-6);
   border-top: 1px solid var(--color-border);
