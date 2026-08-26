@@ -89,7 +89,7 @@ export default function AdScreen() {
         <div className="loading-overlay">
           <div className="loading-card">
             <div className="spinner" aria-hidden="true" />
-            <p>Analysing your ad — this can take up to 30 seconds…</p>
+            <p>Analysing your ad — this can take up to 60 seconds…</p>
           </div>
         </div>
       )}

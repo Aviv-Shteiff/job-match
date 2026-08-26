@@ -23,7 +23,7 @@ Where this document is silent, decide in favour of making a real gap more visibl
    Each entry also records which of the profile screen's two groups it belongs to —
    skills, or roles and experience — defaulting to skills. That grouping is display
    only: nothing in matching reads it.
-2. Submitting ad text returns a requirement list or a visible error within 30 seconds.
+2. Submitting ad text returns a requirement list or a visible error within 60 seconds.
    Text shorter than 200 characters is rejected before any model call, with a message
    asking for the full ad — this is a minimum length guard against empty or accidental
    submissions, not a claim about what makes a valid job ad.

@@ -3,10 +3,10 @@ import { logModelCall } from './modelLog.js';
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-// C2's 30-second end-to-end bound leaves room for validation, grounding, and the
+// C2's 60-second end-to-end bound leaves room for validation, grounding, and the
 // Mongo write after the model responds, so the call itself is aborted well before
-// that: a timeout must still reach the browser inside the 30s window as a failure.
-const CALL_TIMEOUT_MS = 25000;
+// that: a timeout must still reach the browser inside the 60s window as a failure.
+const CALL_TIMEOUT_MS = 55000;
 
 export async function callOpenRouter(prompt) {
   const apiKey = process.env.OPENROUTER_API_KEY;
