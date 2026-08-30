@@ -200,3 +200,43 @@ test('one malformed item invalidates the whole response, not just that item', ()
 
   assert.equal(result.ok, false);
 });
+
+// C11 / §4: a correctly-shaped payload wrapped in a markdown code fence (observed
+// from anthropic/claude-haiku-4.5) is a real analysis, not the malformed-reply case.
+// It must succeed; genuinely malformed replies below must still fail visibly.
+test('accepts a well-formed response wrapped in a ```json code fence', () => {
+  const raw = '```json\n' + JSON.stringify({ requirements: [req()] }, null, 2) + '\n```';
+
+  const result = validateExtractionResponse(raw);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.requirements.length, 1);
+  assert.equal(result.requirements[0].text, 'Node.js');
+});
+
+test('accepts a well-formed response wrapped in a bare ``` fence with no language tag', () => {
+  const raw = '```\n' + JSON.stringify({ requirements: [req({ type: 'nice_to_have' })] }) + '\n```';
+
+  const result = validateExtractionResponse(raw);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.requirements[0].type, 'nice_to_have');
+});
+
+test('a code fence does not paper over a wrong-shape payload', () => {
+  const raw = '```json\n' + JSON.stringify({ notes: 'no requirements key here' }) + '\n```';
+
+  const result = validateExtractionResponse(raw);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'wrong_shape');
+});
+
+test('an opening code fence with no closing fence is still not valid JSON (§4)', () => {
+  const raw = '```json\nSure, the requirements are: Node.js, Docker.';
+
+  const result = validateExtractionResponse(raw);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'not_json');
+});

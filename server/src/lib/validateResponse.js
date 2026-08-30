@@ -87,10 +87,26 @@ function validateShape(parsed) {
   return null;
 }
 
+// Some models (e.g. anthropic/claude-haiku-4.5) wrap their JSON in a markdown code
+// fence despite the prompt asking for a bare object. The payload inside is still a
+// single, correctly-shaped JSON object, so we unwrap a fence that encloses the whole
+// response before parsing. This is deliberately narrow — only a wrapper that both
+// opens and closes the text is stripped. Prose that merely contains JSON is left
+// alone, so C11 / §4's "malformed reply is a visible failure" guarantee stands.
+function stripCodeFence(text) {
+  const trimmed = text.trim();
+  const opening = /^```[ \t]*[A-Za-z0-9_-]*[ \t]*\r?\n/;
+  const match = trimmed.match(opening);
+  if (!match || !trimmed.endsWith('```')) {
+    return text;
+  }
+  return trimmed.slice(match[0].length, -3);
+}
+
 export function validateExtractionResponse(rawText) {
   let parsed;
   try {
-    parsed = JSON.parse(rawText);
+    parsed = JSON.parse(stripCodeFence(rawText));
   } catch {
     return failure(FAILURE_REASONS.NOT_JSON, 'Model response is not valid JSON.');
   }
